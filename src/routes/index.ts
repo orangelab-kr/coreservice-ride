@@ -1,14 +1,13 @@
 import express, { Application } from 'express';
-
-import InternalError from '../tools/error';
-import OPCODE from '../tools/opcode';
-import Wrapper from '../tools/wrapper';
-import logger from '../tools/logger';
 import morgan from 'morgan';
 import os from 'os';
+import { InternalError, logger, OPCODE, Wrapper } from '..';
 
-export default function getRouter(): Application {
+
+export function getRouter(): Application {
   const router = express();
+  InternalError.registerSentry(router);
+
   const hostname = os.hostname();
   const logging = morgan('common', {
     stream: { write: (str: string) => logger.info(`${str.trim()}`) },
