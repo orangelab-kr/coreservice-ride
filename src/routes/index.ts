@@ -1,8 +1,14 @@
 import express, { Application } from 'express';
 import morgan from 'morgan';
 import os from 'os';
-import { InternalError, logger, OPCODE, Wrapper } from '..';
-
+import {
+  InternalError,
+  logger,
+  OPCODE,
+  Region,
+  UserMiddleware,
+  Wrapper,
+} from '..';
 
 export function getRouter(): Application {
   const router = express();
@@ -25,6 +31,15 @@ export function getRouter(): Application {
         mode: process.env.NODE_ENV,
         cluster: hostname,
       });
+    })
+  );
+
+  router.get(
+    '/regions',
+    UserMiddleware(),
+    Wrapper(async (req, res) => {
+      const regions = await Region.getRegions();
+      res.json({ opcode: OPCODE.SUCCESS, regions });
     })
   );
 
