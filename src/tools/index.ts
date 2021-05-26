@@ -7,3 +7,4 @@ export * from './wrapper';
 export * from './wrapper';
 export * from './platform';
 export * from './transactions';
+export * from './coreservice';

@@ -23,6 +23,21 @@ export function getPlatformClient(): Got {
       'X-HIKICK-PLATFORM-ACCESS-KEY-ID': HIKICK_PLATFORM_ACCESS_KEY_ID,
       'X-HIKICK-PLATFORM-SECRET-ACCESS-KEY': HIKICK_PLATFORM_SECRET_ACCESS_KEY,
     },
+    hooks: {
+      beforeError: [
+        (err: any): any => {
+          err.name = 'InternalError';
+          if (!err.response || !err.response.body) {
+            err.message = '알 수 없는 오류가 발생하였습니다.';
+            return err;
+          }
+
+          const { opcode, message } = JSON.parse(<string>err.response.body);
+          err = { ...err, opcode, message };
+          return err;
+        },
+      ],
+    },
   });
 
   return client;
