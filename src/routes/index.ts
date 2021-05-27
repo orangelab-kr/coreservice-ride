@@ -43,6 +43,15 @@ export function getRouter(): Application {
     })
   );
 
+  router.get(
+    '/location',
+    UserMiddleware(),
+    Wrapper(async (req, res) => {
+      const geofence = await Region.getCurrentGeofence(req.query);
+      res.json({ opcode: OPCODE.SUCCESS, geofence });
+    })
+  );
+
   router.all(
     '*',
     Wrapper(async () => {

@@ -1,4 +1,4 @@
-import { getPlatformClient } from '..';
+import { getPlatformClient, Joi } from '..';
 
 export interface PricingModel {
   pricingId: string;
@@ -15,6 +15,20 @@ export interface PricingModel {
 }
 
 export interface RegionGeofenceModel {
+  geofenceId: string;
+  enabled: boolean;
+  name: string;
+  geojson: RegionGeofenceGeojsonModel;
+  regionId: string;
+  region: RegionModel;
+  profileId: string;
+  profile: ProfileModel;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+}
+
+export interface RegionGeofenceGeojsonModel {
   type: 'Polygon';
   coordinates: [[[number, number][]]];
 }
@@ -41,18 +55,7 @@ export interface RegionModel {
   updatedAt: Date;
   deletedAt: null;
   pricing: PricingModel;
-  geofences: {
-    geofenceId: string;
-    enabled: boolean;
-    name: string;
-    geojson: RegionGeofenceModel;
-    regionId: string;
-    profileId: string;
-    createdAt: Date;
-    updatedAt: Date;
-    deletedAt: null;
-    profile: ProfileModel;
-  }[];
+  geofences: RegionGeofenceModel[];
 }
 
 export class Region {
@@ -62,5 +65,22 @@ export class Region {
       .json<{ opcode: number; regions: RegionModel[] }>();
 
     return regions;
+  }
+
+  public static async getCurrentGeofence(props: {
+    lat?: number;
+    lng?: number;
+  }): Promise<RegionGeofenceModel> {
+    const schema = await Joi.object({
+      lat: Joi.number().min(-90).max(90).required(),
+      lng: Joi.number().min(-180).max(180).required(),
+    });
+
+    const searchParams = await schema.validateAsync(props);
+    const { geofence } = await getPlatformClient()
+      .get('location/geofences', { searchParams })
+      .json<{ opcode: number; geofence: RegionGeofenceModel }>();
+
+    return geofence;
   }
 }
