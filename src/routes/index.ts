@@ -2,6 +2,8 @@ import express, { Application } from 'express';
 import morgan from 'morgan';
 import os from 'os';
 import {
+  getCurrentRouter,
+  getKickboardsRouter,
   InternalError,
   logger,
   OPCODE,
@@ -9,8 +11,8 @@ import {
   UserMiddleware,
   Wrapper,
 } from '..';
-import { getKickboardsRouter } from './kickboards';
 
+export * from './current';
 export * from './kickboards';
 
 export function getRouter(): Application {
@@ -26,6 +28,7 @@ export function getRouter(): Application {
   router.use(express.json());
   router.use(express.urlencoded({ extended: true }));
   router.use('/kickboards', getKickboardsRouter());
+  router.use('/current', UserMiddleware(), getCurrentRouter());
 
   router.get(
     '/',
