@@ -4,10 +4,11 @@ import { UserModel } from '../src';
 declare global {
   namespace Express {
     interface Request {
-      loggined?: {
+      loggined: {
         sessionId: string;
         user: UserModel;
         license?: LicenseModel;
+        ride?: RideModel;
       };
     }
   }
