@@ -41,6 +41,7 @@ export function getAccountsClient(): Got {
   }
 
   client = got.extend({
+    retry: 0,
     prefixUrl: `${HIKICK_CORESERVICE_ACCOUNTS_URL}/internal`,
     hooks: {
       beforeRequest: [

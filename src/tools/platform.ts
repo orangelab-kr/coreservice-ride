@@ -18,6 +18,7 @@ export function getPlatformClient(): Got {
   }
 
   client = got.extend({
+    retry: 0,
     prefixUrl: `${HIKICK_PLATFORM_URL}/v1`,
     headers: {
       'X-HIKICK-PLATFORM-ACCESS-KEY-ID': HIKICK_PLATFORM_ACCESS_KEY_ID,

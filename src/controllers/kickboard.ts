@@ -1,4 +1,4 @@
-import { getPlatformClient, Joi } from '../tools';
+import { getPlatformClient, Joi } from '..';
 
 export enum KickboardLost {
   FINAL = 0,
