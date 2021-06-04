@@ -82,6 +82,26 @@ export class Ride {
       prisma.rideModel.update({ where: { rideId }, data: { endedAt } });
   }
 
+  public static async lightsOn(ride: RideModel): Promise<void> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lights/on`);
+  }
+
+  public static async lightsOff(ride: RideModel): Promise<void> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lights/off`);
+  }
+
+  public static async lock(ride: RideModel): Promise<void> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lock/on`);
+  }
+
+  public static async unlock(ride: RideModel): Promise<void> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lock/off`);
+  }
+
   public static async getCurrentRide(
     user: UserModel
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel | null>> {

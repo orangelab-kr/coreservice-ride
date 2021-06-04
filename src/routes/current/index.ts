@@ -1,10 +1,23 @@
 import { Router } from 'express';
-import { $$$, LicenseMiddleware, OPCODE, Wrapper } from '..';
-import { Ride } from '../controllers/ride';
-import { CurrentRideMiddleware } from '../middlewares';
+import {
+  $$$,
+  CurrentRideMiddleware,
+  getCurrentLightsRouter,
+  getCurrentLockRouter,
+  LicenseMiddleware,
+  OPCODE,
+  Ride,
+  Wrapper,
+} from '../..';
+
+export * from './lights';
+export * from './lock';
 
 export function getCurrentRouter() {
   const router = Router();
+
+  router.use('/lights', CurrentRideMiddleware(), getCurrentLightsRouter());
+  router.use('/lock', CurrentRideMiddleware(), getCurrentLockRouter());
 
   // 라이딩 정보
   router.get(
