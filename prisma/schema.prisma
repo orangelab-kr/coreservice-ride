@@ -11,15 +11,15 @@ generator client {
 model RideModel {
   rideId String @id @default(uuid())
 
-  userId String
+  userId        String
   kickboardCode String
 
-  locations LocationModel[]
+  locations  LocationModel[]
   properties Json? // For HIKICK OpenAPI
 
-  endedAt DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 }
 
@@ -27,12 +27,12 @@ model LocationModel {
   locationId String @id @default(uuid())
 
   rideId String
-  ride RideModel @relation(fields: [rideId], references: [rideId])
+  ride   RideModel @relation(fields: [rideId], references: [rideId])
 
-  latitude Float
+  latitude  Float
   longitude Float
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   deletedAt DateTime?
 }

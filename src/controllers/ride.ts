@@ -1,4 +1,4 @@
-import { Prisma, RideModel } from '@prisma/client';
+import { Prisma, RideModel, LocationModel } from '@prisma/client';
 import { UserModel, $$$ } from '..';
 import {
   Database,
@@ -12,6 +12,13 @@ const { prisma } = Database;
 
 export interface RideProperties {
   openapi: { rideId: string };
+}
+
+export interface OpenApiRideTimeline {
+  latitude: number;
+  longitude: number;
+  battery: number;
+  createdAt: Date;
 }
 
 export class Ride {
@@ -100,6 +107,36 @@ export class Ride {
   public static async unlock(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     await getPlatformClient().get(`ride/rides/${openapi.rideId}/lock/off`);
+  }
+
+  public static async addLocation(
+    ride: RideModel,
+    props: {
+      latitude?: number;
+      longitude?: number;
+    }
+  ): Promise<() => Prisma.Prisma__LocationModelClient<LocationModel>> {
+    const schema = Joi.object({
+      latitude: Joi.number().min(-90).max(90).required(),
+      longitude: Joi.number().min(-180).max(180).required(),
+    });
+
+    const { rideId } = ride;
+    const { latitude, longitude } = await schema.validateAsync(props);
+    return () =>
+      prisma.locationModel.create({
+        data: { rideId, latitude, longitude },
+      });
+  }
+
+  public static async getTimeline(
+    ride: RideModel
+  ): Promise<OpenApiRideTimeline[]> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    const { timeline } = await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/timeline`)
+      .json<{ opcode: OPCODE; timeline: OpenApiRideTimeline[] }>();
+    return timeline;
   }
 
   public static async getCurrentRide(

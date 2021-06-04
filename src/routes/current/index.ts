@@ -45,11 +45,28 @@ export function getCurrentRouter() {
     '/',
     CurrentRideMiddleware(),
     Wrapper(async (req, res) => {
-      const ride = await $$$(
-        Ride.terminate(req.loggined.ride, req.query as any)
-      );
+      await $$$(Ride.terminate(req.loggined.ride, req.query as any));
+      res.json({ opcode: OPCODE.SUCCESS });
+    })
+  );
 
-      res.json({ opcode: OPCODE.SUCCESS, ride });
+  // 위치 추가
+  router.get(
+    '/location',
+    CurrentRideMiddleware(),
+    Wrapper(async (req, res) => {
+      const { query, loggined } = req;
+      await $$$(Ride.addLocation(loggined.ride, query as any));
+      res.json({ opcode: OPCODE.SUCCESS });
+    })
+  );
+
+  router.get(
+    '/timeline',
+    CurrentRideMiddleware(),
+    Wrapper(async (req, res) => {
+      const timeline = await Ride.getTimeline(req.loggined.ride);
+      res.json({ opcode: OPCODE.SUCCESS, timeline });
     })
   );
 
