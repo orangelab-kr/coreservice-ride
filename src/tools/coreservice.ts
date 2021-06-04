@@ -1,5 +1,6 @@
 import got, { Got } from 'got';
 import jwt from 'jsonwebtoken';
+import { InternalError } from './error';
 
 let client: Got | null;
 let accessKey: string | null;
@@ -57,14 +58,12 @@ export function getAccountsClient(): Got {
       ],
       beforeError: [
         (err: any): any => {
-          err.name = 'InternalError';
-          if (!err.response || !err.response.body) {
-            err.message = '알 수 없는 오류가 발생하였습니다.';
-            return err;
-          }
-
+          if (!err.response || !err.response.body) return err;
           const { opcode, message } = JSON.parse(<string>err.response.body);
-          err = { ...err, opcode, message };
+
+          err.name = 'InternalError';
+          err.opcode = opcode;
+          err.message = message;
           return err;
         },
       ],
