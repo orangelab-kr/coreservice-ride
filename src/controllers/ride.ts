@@ -21,10 +21,37 @@ export interface OpenApiRideTimeline {
   createdAt: Date;
 }
 
+export interface OpenApiRidePricing {
+  standard: {
+    price: number;
+    discount: number;
+    total: number;
+  };
+  perMinute: {
+    price: number;
+    discount: number;
+    total: number;
+  };
+  surcharge: {
+    price: number;
+    discount: number;
+    total: number;
+  };
+  isNightly: boolean;
+  price: number;
+  discount: number;
+  total: number;
+}
+
 export class Ride {
   public static async start(
     user: UserModel,
-    props: { kickboardCode: string; latitude: number; longitude: number }
+    props: {
+      kickboardCode: string;
+      couponId: string;
+      latitude: number;
+      longitude: number;
+    }
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
     const { userId, phoneNo: phone, realname, birthday } = user;
     const isRiding = await $$$(this.getCurrentRide(user));
@@ -34,6 +61,7 @@ export class Ride {
 
     const schema = Joi.object({
       kickboardCode: Joi.string().alphanum().required(),
+      couponId: Joi.string().uuid().optional(),
       latitude: Joi.number().min(-90).max(90).required(),
       longitude: Joi.number().min(-180).max(180).required(),
     });
@@ -59,9 +87,19 @@ export class Ride {
 
     const properties = { openapi: { rideId } };
     const locations = { create: { latitude, longitude } };
-    return () =>
-      prisma.rideModel.create({
+    return () => <any>prisma.rideModel.create({
         data: { userId, kickboardCode, properties, locations },
+        select: {
+          rideId: true,
+          userId: true,
+          kickboardCode: true,
+          locations: false,
+          properties: false,
+          endedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          deletedAt: true,
+        },
       });
   }
 
@@ -137,6 +175,23 @@ export class Ride {
       .get(`ride/rides/${openapi.rideId}/timeline`)
       .json<{ opcode: OPCODE; timeline: OpenApiRideTimeline[] }>();
     return timeline;
+  }
+
+  public static async getPricing(
+    ride: RideModel,
+    props: { latitude?: number; longitude?: number }
+  ): Promise<OpenApiRidePricing> {
+    const schema = Joi.object({
+      latitude: Joi.number().min(-90).max(90).required(),
+      longitude: Joi.number().min(-180).max(180).required(),
+    });
+
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    const searchParams = await schema.validateAsync(props);
+    const { pricing } = await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/pricing`, { searchParams })
+      .json<{ opcode: OPCODE; pricing: OpenApiRidePricing }>();
+    return pricing;
   }
 
   public static async getCurrentRide(

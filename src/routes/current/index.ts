@@ -61,12 +61,24 @@ export function getCurrentRouter() {
     })
   );
 
+  // 킥보드 위치
   router.get(
     '/timeline',
     CurrentRideMiddleware(),
     Wrapper(async (req, res) => {
       const timeline = await Ride.getTimeline(req.loggined.ride);
       res.json({ opcode: OPCODE.SUCCESS, timeline });
+    })
+  );
+
+  // 가격
+  router.get(
+    '/pricing',
+    CurrentRideMiddleware(),
+    Wrapper(async (req, res) => {
+      const { loggined, query } = req;
+      const pricing = await Ride.getPricing(loggined.ride, query);
+      res.json({ opcode: OPCODE.SUCCESS, pricing });
     })
   );
 
