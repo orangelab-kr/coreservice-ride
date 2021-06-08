@@ -9,6 +9,7 @@ import {
   Ride,
   Wrapper,
 } from '../..';
+import { PaymentsMiddleware } from '../../middlewares';
 
 export * from './lights';
 export * from './lock';
@@ -33,6 +34,7 @@ export function getCurrentRouter() {
   router.post(
     '/',
     LicenseMiddleware(),
+    PaymentsMiddleware(),
     Wrapper(async (req, res) => {
       const { query, loggined } = req;
       const ride = await $$$(Ride.start(loggined.user, query as any));
