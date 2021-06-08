@@ -2,6 +2,7 @@ import { Prisma, RideModel, LocationModel } from '@prisma/client';
 import { UserModel, $$$ } from '..';
 import {
   Database,
+  getPaymentsClient,
   getPlatformClient,
   InternalError,
   Joi,
@@ -43,7 +44,37 @@ export interface OpenApiRidePricing {
   total: number;
 }
 
+export interface CouponModel {
+  couponId: string;
+  userId: string;
+  couponGroupId: string;
+  properties?: {
+    openapi?: {
+      discountId: string;
+      discountGroupId: string;
+    };
+  };
+  usedAt: Date | null;
+  expiredAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+}
+
 export class Ride {
+  public static async getCoupon(
+    user: UserModel,
+    couponId: string
+  ): Promise<CouponModel> {
+    const { userId } = user;
+    const paymentsClient = getPaymentsClient();
+    const { coupon } = await paymentsClient
+      .get(`${userId}/coupons/${couponId}`)
+      .json<{ opcode: OPCODE; coupon: CouponModel }>();
+
+    return coupon;
+  }
+
   public static async start(
     user: UserModel,
     props: {
@@ -66,9 +97,21 @@ export class Ride {
       longitude: Joi.number().min(-180).max(180).required(),
     });
 
-    const { kickboardCode, longitude, latitude } = await schema.validateAsync(
-      props
-    );
+    const { kickboardCode, longitude, latitude, couponId } =
+      await schema.validateAsync(props);
+
+    let discountId: string | undefined;
+    let discountGroupId: string | undefined;
+    if (couponId) {
+      console.log(couponId);
+      const coupon = await this.getCoupon(user, couponId);
+      if (!coupon.properties || !coupon.properties.openapi) {
+        throw new InternalError('적용할 수 없는 쿠폰입니다.', OPCODE.ERROR);
+      }
+
+      discountId = coupon.properties.openapi.discountId;
+      discountGroupId = coupon.properties.openapi.discountGroupId;
+    }
 
     const platformClient = getPlatformClient();
     const { rideId } = await platformClient
@@ -81,6 +124,8 @@ export class Ride {
           birthday,
           latitude,
           longitude,
+          discountId,
+          discountGroupId,
         },
       })
       .json();
@@ -89,17 +134,6 @@ export class Ride {
     const locations = { create: { latitude, longitude } };
     return () => <any>prisma.rideModel.create({
         data: { userId, kickboardCode, properties, locations },
-        select: {
-          rideId: true,
-          userId: true,
-          kickboardCode: true,
-          locations: false,
-          properties: false,
-          endedAt: true,
-          createdAt: true,
-          updatedAt: true,
-          deletedAt: true,
-        },
       });
   }
 
@@ -250,7 +284,7 @@ export class Ride {
     const schema = Joi.object({
       take: Joi.number().default(10).optional(),
       skip: Joi.number().default(0).optional(),
-      search: Joi.string().default('').allow('').optional(),
+      search: Joi.string().allow('').optional(),
       orderByField: Joi.string()
         .valid('endedAt', 'createdAt', 'updatedAt', 'deletedAt')
         .default('createdAt')
@@ -264,7 +298,7 @@ export class Ride {
     const orderBy = { [orderByField]: orderBySort };
     const where = {
       userId,
-      OR: [{ rideId: search }, { userId: search }, { kickboardCode: search }],
+      OR: [{ kickboardCode: { contains: search } }],
     };
 
     const [total, rides] = await prisma.$transaction([
