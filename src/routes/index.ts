@@ -3,6 +3,7 @@ import morgan from 'morgan';
 import os from 'os';
 import {
   getCurrentRouter,
+  getHistoriesRouter,
   getKickboardsRouter,
   InternalError,
   logger,
@@ -13,6 +14,7 @@ import {
 } from '..';
 
 export * from './current';
+export * from './histories';
 export * from './kickboards';
 
 export function getRouter(): Application {
@@ -29,6 +31,7 @@ export function getRouter(): Application {
   router.use(express.urlencoded({ extended: true }));
   router.use('/kickboards', getKickboardsRouter());
   router.use('/current', UserMiddleware(), getCurrentRouter());
+  router.use('/histories', UserMiddleware(), getHistoriesRouter());
 
   router.get(
     '/',
