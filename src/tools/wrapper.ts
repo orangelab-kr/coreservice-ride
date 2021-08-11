@@ -39,6 +39,7 @@ export function Wrapper(cb: Callback): Callback {
         details = err.details;
       }
 
+      if (res.headersSent) return;
       res.status(status).json({
         opcode,
         eventId,
