@@ -1,4 +1,5 @@
 import { Callback, InternalError, OPCODE, Ride, Wrapper } from '..';
+import { $$$ } from '../tools';
 
 export function RideMiddleware(): Callback {
   return Wrapper(async (req, res, next) => {
@@ -14,20 +15,36 @@ export function RideMiddleware(): Callback {
     const ride = await Ride.getRideOrThrow(user, rideId);
     req.loggined.ride = ride;
 
-    await next();
+    next();
   });
 }
 
-export function CurrentRideMiddleware(): Callback {
+export function CurrentRideMiddleware(props?: {
+  allowNull?: boolean;
+  throwIfRiding?: boolean;
+}): Callback {
+  const { allowNull, throwIfRiding } = {
+    allowNull: false,
+    throwIfRiding: false,
+    ...props,
+  };
+
   return Wrapper(async (req, res, next) => {
     const { user } = req.loggined;
-    if (!user) {
+    if (!throwIfRiding && !user) {
       throw new InternalError('현재 라이드 중이지 않습니다.', OPCODE.NOT_FOUND);
     }
 
-    const ride = await Ride.getCurrentRideOrThrow(user);
-    req.loggined.ride = ride;
+    const ride =
+      throwIfRiding && allowNull
+        ? await $$$(Ride.getCurrentRide(user))
+        : await Ride.getCurrentRideOrThrow(user);
 
-    await next();
+    if (throwIfRiding && ride) {
+      throw new InternalError('이미 라이드 중입니다.', OPCODE.ALREADY_EXISTS);
+    }
+
+    req.loggined.ride = ride;
+    next();
   });
 }

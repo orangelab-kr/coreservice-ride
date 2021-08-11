@@ -85,11 +85,6 @@ export class Ride {
     }
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
     const { userId, phoneNo: phone, realname, birthday } = user;
-    const isRiding = await $$$(this.getCurrentRide(user));
-    if (isRiding) {
-      throw new InternalError('이미 라이드 중입니다.', OPCODE.ALREADY_EXISTS);
-    }
-
     const schema = Joi.object({
       kickboardCode: Joi.string().alphanum().required(),
       couponId: Joi.string().uuid().optional(),

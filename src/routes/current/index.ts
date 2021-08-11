@@ -6,10 +6,11 @@ import {
   getCurrentLockRouter,
   LicenseMiddleware,
   OPCODE,
+  PaymentsMiddleware,
+  PromiseMiddleware,
   Ride,
   Wrapper,
 } from '../..';
-import { PaymentsMiddleware } from '../../middlewares';
 
 export * from './lights';
 export * from './lock';
@@ -23,7 +24,7 @@ export function getCurrentRouter() {
   // 라이딩 정보
   router.get(
     '/',
-    CurrentRideMiddleware(),
+    CurrentRideMiddleware({ allowNull: true }),
     Wrapper(async (req, res) => {
       const { ride } = req.loggined;
       res.json({ opcode: OPCODE.SUCCESS, ride });
@@ -33,8 +34,11 @@ export function getCurrentRouter() {
   // 라이딩 시작
   router.post(
     '/',
-    LicenseMiddleware(),
-    PaymentsMiddleware(),
+    PromiseMiddleware(
+      CurrentRideMiddleware({ throwIfRiding: true }),
+      LicenseMiddleware(),
+      PaymentsMiddleware()
+    ),
     Wrapper(async (req, res) => {
       const { query, loggined } = req;
       const ride = await $$$(Ride.start(loggined.user, query as any));
