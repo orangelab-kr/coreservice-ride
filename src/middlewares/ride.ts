@@ -36,7 +36,7 @@ export function CurrentRideMiddleware(props?: {
     }
 
     const ride =
-      throwIfRiding && allowNull
+      allowNull || throwIfRiding
         ? await $$$(Ride.getCurrentRide(user))
         : await Ride.getCurrentRideOrThrow(user);
 

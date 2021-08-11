@@ -2,12 +2,16 @@ import express, { Application } from 'express';
 import morgan from 'morgan';
 import os from 'os';
 import {
+  CurrentRideMiddleware,
   getCurrentRouter,
   getHistoriesRouter,
   getKickboardsRouter,
   InternalError,
+  LicenseMiddleware,
   logger,
   OPCODE,
+  PaymentsMiddleware,
+  PromiseMiddleware,
   Region,
   UserMiddleware,
   Wrapper,
@@ -42,6 +46,17 @@ export function getRouter(): Application {
         cluster: hostname,
       });
     })
+  );
+
+  router.get(
+    '/ready',
+    UserMiddleware(),
+    PromiseMiddleware(
+      CurrentRideMiddleware({ throwIfRiding: true }),
+      LicenseMiddleware(),
+      PaymentsMiddleware()
+    ),
+    Wrapper(async (req, res) => res.json({ opcode: OPCODE.SUCCESS }))
   );
 
   router.get(
