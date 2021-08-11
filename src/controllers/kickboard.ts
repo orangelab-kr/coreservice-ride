@@ -8,6 +8,10 @@ export enum KickboardLost {
 }
 
 export interface KickboardModel {
+  kickboardCode: string;
+  lost: KickboardLost | null;
+  photo: string | null;
+  helmetId: string | null;
   status: {
     gps: {
       latitude: number;
@@ -18,9 +22,6 @@ export interface KickboardModel {
         battery: number;
       };
     };
-    kickboardCode: string;
-    lost: KickboardLost | null;
-    photo: string;
   };
 }
 

@@ -103,7 +103,6 @@ export class Ride {
     let discountId: string | undefined;
     let discountGroupId: string | undefined;
     if (couponId) {
-      console.log(couponId);
       const coupon = await this.getCoupon(user, couponId);
       if (!coupon.properties || !coupon.properties.openapi) {
         throw new InternalError('적용할 수 없는 쿠폰입니다.', OPCODE.ERROR);
@@ -113,8 +112,7 @@ export class Ride {
       discountGroupId = coupon.properties.openapi.discountGroupId;
     }
 
-    const platformClient = getPlatformClient();
-    const { rideId } = await platformClient
+    const { rideId } = await getPlatformClient()
       .post('ride/rides', {
         json: {
           kickboardCode,
