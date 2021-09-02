@@ -1,11 +1,11 @@
 service: 'coreservice-ride'
-useDotenv: false
+useDotenv: true
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs14.x
   region: ap-northeast-2
-  stage: ${opt:stage, 'dev'}
+  stage: ${opt.stage, 'stage'}
   lambdaHashingVersion: '20201221'
   apiGateway:
     shouldStartNameWithService: true
