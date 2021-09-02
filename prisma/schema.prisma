@@ -15,6 +15,7 @@ model RideModel {
   userId        String
   kickboardCode String
 
+  photo      String?
   locations  LocationModel[]
   properties Json? // For HIKICK OpenAPI
 

@@ -221,6 +221,24 @@ export class Ride {
     return pricing;
   }
 
+  public static async setReturnedPhoto(
+    ride: RideModel,
+    props: { photo: string }
+  ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
+    const { rideId, properties } = ride;
+    const schema = Joi.object({ photo: Joi.string().uri().required() });
+    const { openapi } = <RideProperties>(<unknown>properties);
+    const json = await schema.validateAsync(props);
+    const { photo } = json;
+
+    await getPlatformClient()
+      .post(`ride/rides/${openapi.rideId}/photo`, { json })
+      .json<{ opcode: OPCODE }>();
+
+    return () =>
+      prisma.rideModel.update({ where: { rideId }, data: { photo } });
+  }
+
   public static async getCurrentRide(
     user: UserModel
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel | null>> {

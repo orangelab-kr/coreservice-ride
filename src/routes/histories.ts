@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { OPCODE, Ride, Wrapper } from '..';
-import { RideMiddleware } from '../middlewares';
+import { $$$, OPCODE, Ride, RideMiddleware, Wrapper } from '..';
 
 export function getHistoriesRouter(): Router {
   const router = Router();
@@ -20,6 +19,15 @@ export function getHistoriesRouter(): Router {
     Wrapper(async (req, res) => {
       const { ride } = req.loggined;
       res.json({ opcode: OPCODE.SUCCESS, ride });
+    })
+  );
+
+  router.post(
+    '/:rideId/photo',
+    RideMiddleware(),
+    Wrapper(async (req, res) => {
+      await $$$(Ride.setReturnedPhoto(req.loggined.ride, req.body));
+      res.json({ opcode: OPCODE.SUCCESS });
     })
   );
 
