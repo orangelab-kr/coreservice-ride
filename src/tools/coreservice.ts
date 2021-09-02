@@ -1,6 +1,5 @@
 import got, { Got } from 'got';
 import jwt from 'jsonwebtoken';
-import { InternalError } from './error';
 
 let accountsClient: Got | null;
 let paymentsClient: Got | null;

@@ -15,7 +15,7 @@ import {
 export * from './lights';
 export * from './lock';
 
-export function getCurrentRouter() {
+export function getCurrentRouter(): Router {
   const router = Router();
 
   router.use('/lights', CurrentRideMiddleware(), getCurrentLightsRouter());

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { Kickboard, OPCODE, Wrapper } from '..';
 
-export function getKickboardsRouter() {
+export function getKickboardsRouter(): Router {
   const router = Router();
 
   router.get(

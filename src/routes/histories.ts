@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { OPCODE, Ride, Wrapper } from '..';
 import { RideMiddleware } from '../middlewares';
 
-export function getHistoriesRouter() {
+export function getHistoriesRouter(): Router {
   const router = Router();
 
   router.get(

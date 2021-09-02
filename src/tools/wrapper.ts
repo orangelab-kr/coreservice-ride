@@ -1,9 +1,7 @@
 import * as Sentry from '@sentry/node';
-
 import { NextFunction, Request, Response } from 'express';
-import { OPCODE, logger } from '..';
-
 import { ValidationError } from 'joi';
+import { logger, OPCODE } from '..';
 
 export type Callback = (
   req: Request,
