@@ -66,6 +66,17 @@ export function getCurrentRouter(): Router {
     })
   );
 
+  // 쿠폰 변경
+  router.post(
+    '/coupon',
+    CurrentRideMiddleware(),
+    Wrapper(async (req, res) => {
+      const { loggined, body } = req;
+      await Ride.changeCoupon(loggined.ride, body);
+      res.json({ opcode: OPCODE.SUCCESS });
+    })
+  );
+
   // 위치 추가
   router.get(
     '/location',

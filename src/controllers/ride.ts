@@ -84,13 +84,28 @@ export interface CouponModel {
 
 export class Ride {
   public static async getCoupon(
-    user: UserModel,
+    userId: string,
     couponId: string
   ): Promise<CouponModel> {
-    const { userId } = user;
     const paymentsClient = getPaymentsClient();
     const { coupon } = await paymentsClient
       .get(`${userId}/coupons/${couponId}`)
+      .json<{ opcode: OPCODE; coupon: CouponModel }>();
+
+    return coupon;
+  }
+
+  public static async modifyCoupon(
+    userId: string,
+    couponId: string,
+    props: {
+      usedAt?: Date | null;
+      expiredAt?: Date | null;
+    }
+  ): Promise<CouponModel> {
+    const paymentsClient = getPaymentsClient();
+    const { coupon } = await paymentsClient
+      .post(`${userId}/coupons/${couponId}`, { json: props })
       .json<{ opcode: OPCODE; coupon: CouponModel }>();
 
     return coupon;
@@ -119,7 +134,7 @@ export class Ride {
     let discountId: string | undefined;
     let discountGroupId: string | undefined;
     if (couponId) {
-      const coupon = await this.getCoupon(user, couponId);
+      const coupon = await this.getCoupon(userId, couponId);
       if (!coupon.properties || !coupon.properties.openapi) {
         throw new InternalError('적용할 수 없는 쿠폰입니다.', OPCODE.ERROR);
       }
@@ -144,10 +159,14 @@ export class Ride {
       })
       .json();
 
+    if (discountId && discountGroupId) {
+      await this.modifyCoupon(userId, couponId, { usedAt: new Date() });
+    }
+
     const properties = { openapi: { rideId } };
     const locations = { create: { latitude, longitude } };
     return () => <any>prisma.rideModel.create({
-        data: { userId, kickboardCode, properties, locations },
+        data: { userId, kickboardCode, properties, locations, couponId },
       });
   }
 
@@ -168,6 +187,43 @@ export class Ride {
         searchParams: { latitude, longitude },
       })
       .json();
+  }
+
+  public static async changeCoupon(
+    ride: RideModel,
+    props: { couponId?: string }
+  ): Promise<void> {
+    const { properties, userId } = ride;
+    const { couponId } = await Joi.object({
+      couponId: Joi.string().uuid().allow(null).optional(),
+    }).validateAsync(props);
+    const rideId = (<RideProperties>(<unknown>properties)).openapi.rideId;
+    let discountId: string | undefined;
+    let discountGroupId: string | undefined;
+
+    if (couponId) {
+      const coupon = await this.getCoupon(userId, couponId);
+      if (!coupon.properties || !coupon.properties.openapi) {
+        throw new InternalError('적용할 수 없는 쿠폰입니다.', OPCODE.ERROR);
+      }
+
+      discountId = coupon.properties.openapi.discountId;
+      discountGroupId = coupon.properties.openapi.discountGroupId;
+    }
+
+    if (ride.couponId) {
+      await this.modifyCoupon(userId, ride.couponId, { usedAt: null });
+    }
+
+    await getPlatformClient().post(`ride/rides/${rideId}/discount`, {
+      json: { discountId, discountGroupId },
+    });
+
+    if (couponId) {
+      const { rideId } = ride;
+      await this.modifyCoupon(userId, couponId, { usedAt: new Date() });
+      await prisma.rideModel.update({ where: { rideId }, data: { couponId } });
+    }
   }
 
   public static async lightsOn(ride: RideModel): Promise<void> {
