@@ -22,6 +22,27 @@ export interface OpenApiRideTimeline {
   createdAt: Date;
 }
 
+export interface RideStatus {
+  gps: {
+    latitude: number;
+    longitude: number;
+    satelliteUsedCount: number;
+    isValid: boolean;
+    speed: number;
+  };
+  power: {
+    speedLimit: number;
+    scooter: {
+      battery: number;
+    };
+  };
+  isEnabled: boolean;
+  isLightsOn: boolean;
+  isFallDown: boolean;
+  speed: number;
+  createdAt: Date;
+}
+
 export interface OpenApiRidePricing {
   standard: {
     price: number;
@@ -167,6 +188,13 @@ export class Ride {
   public static async unlock(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     await getPlatformClient().get(`ride/rides/${openapi.rideId}/lock/off`);
+  }
+
+  public static async getStatus(ride: RideModel): Promise<RideStatus> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    return getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/status`)
+      .json();
   }
 
   public static async addLocation(

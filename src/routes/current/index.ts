@@ -56,6 +56,16 @@ export function getCurrentRouter(): Router {
     })
   );
 
+  // 킥보드 상태
+  router.get(
+    '/status',
+    CurrentRideMiddleware(),
+    Wrapper(async (req, res) => {
+      const status = await Ride.getStatus(req.loggined.ride);
+      res.json({ opcode: OPCODE.SUCCESS, status });
+    })
+  );
+
   // 위치 추가
   router.get(
     '/location',
