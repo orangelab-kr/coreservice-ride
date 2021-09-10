@@ -5,6 +5,7 @@ import {
   getCurrentRouter,
   getHistoriesRouter,
   getKickboardsRouter,
+  getWebhookRouter,
   LicenseMiddleware,
   OPCODE,
   PaymentsMiddleware,
@@ -17,6 +18,7 @@ import {
 export * from './current';
 export * from './histories';
 export * from './kickboards';
+export * from './webhook';
 
 export function getRouter(): Router {
   const router = Router();
@@ -24,6 +26,7 @@ export function getRouter(): Router {
   router.use('/kickboards', getKickboardsRouter());
   router.use('/current', UserMiddleware(), getCurrentRouter());
   router.use('/histories', UserMiddleware(), getHistoriesRouter());
+  router.use('/webhook', getWebhookRouter());
 
   router.get(
     '/',

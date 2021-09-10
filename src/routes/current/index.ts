@@ -51,7 +51,7 @@ export function getCurrentRouter(): Router {
     '/',
     CurrentRideMiddleware(),
     Wrapper(async (req, res) => {
-      await $$$(Ride.terminate(req.loggined.ride, req.query as any));
+      await Ride.terminate(req.loggined.ride, req.query as any);
       res.json({ opcode: OPCODE.SUCCESS });
     })
   );

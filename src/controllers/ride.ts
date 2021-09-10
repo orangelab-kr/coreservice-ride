@@ -1,5 +1,5 @@
-import { Prisma, RideModel, LocationModel } from '@prisma/client';
-import { UserModel, $$$ } from '..';
+import { LocationModel, Prisma, RideModel } from '@prisma/client';
+import { $$$, UserModel } from '..';
 import {
   Database,
   getPaymentsClient,
@@ -132,16 +132,14 @@ export class Ride {
 
   public static async terminate(
     ride: RideModel,
-    props: { latitude: number; longitude: number }
-  ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
-    const { rideId, properties } = ride;
-    const { openapi } = <RideProperties>(<unknown>properties);
+    props: { latitude?: number; longitude?: number }
+  ): Promise<void> {
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
     const schema = Joi.object({
-      latitude: Joi.number().min(-90).max(90).required(),
-      longitude: Joi.number().min(-180).max(180).required(),
+      latitude: Joi.number().min(-90).max(90).optional(),
+      longitude: Joi.number().min(-180).max(180).optional(),
     });
 
-    const endedAt = new Date();
     const { longitude, latitude } = await schema.validateAsync(props);
     const platformClient = getPlatformClient();
     await platformClient
@@ -149,9 +147,6 @@ export class Ride {
         searchParams: { latitude, longitude },
       })
       .json();
-
-    return () =>
-      prisma.rideModel.update({ where: { rideId }, data: { endedAt } });
   }
 
   public static async lightsOn(ride: RideModel): Promise<void> {
@@ -266,6 +261,26 @@ export class Ride {
     rideId: string
   ): Promise<RideModel> {
     const ride = await $$$(this.getRide(user, rideId));
+    if (!ride) {
+      throw new InternalError('라이드를 찾을 수 없습니다.', OPCODE.NOT_FOUND);
+    }
+
+    return ride;
+  }
+
+  public static async getRideByOpenApiRideId(
+    rideId: string
+  ): Promise<() => Prisma.Prisma__RideModelClient<RideModel | null>> {
+    return () =>
+      prisma.rideModel.findFirst({
+        where: { properties: { equals: { openapi: { rideId } } } },
+      });
+  }
+
+  public static async getRideByOpenApiRideIdOrThrow(
+    rideId: string
+  ): Promise<RideModel> {
+    const ride = await $$$(this.getRideByOpenApiRideId(rideId));
     if (!ride) {
       throw new InternalError('라이드를 찾을 수 없습니다.', OPCODE.NOT_FOUND);
     }
