@@ -69,12 +69,7 @@ export interface CouponModel {
   couponId: string;
   userId: string;
   couponGroupId: string;
-  properties?: {
-    openapi?: {
-      discountId: string;
-      discountGroupId: string;
-    };
-  };
+  properties: CouponPropertiesModel;
   usedAt: Date | null;
   expiredAt: Date;
   createdAt: Date;
@@ -82,17 +77,35 @@ export interface CouponModel {
   deletedAt: null;
 }
 
+export interface CouponPropertiesModel {
+  openapi?: {
+    discountId: string;
+    discountGroupId: string;
+    expiredAt: Date;
+  };
+}
+
 export class Ride {
   public static async getCoupon(
     userId: string,
     couponId: string
   ): Promise<CouponModel> {
-    const paymentsClient = getPaymentsClient();
-    const { coupon } = await paymentsClient
+    const { coupon } = await getPaymentsClient()
       .get(`${userId}/coupons/${couponId}`)
       .json<{ opcode: OPCODE; coupon: CouponModel }>();
 
     return coupon;
+  }
+
+  public static async redeemCoupon(
+    userId: string,
+    couponId: string
+  ): Promise<CouponPropertiesModel> {
+    const { properties } = await getPaymentsClient()
+      .get(`${userId}/coupons/${couponId}/redeem`)
+      .json<{ opcode: OPCODE; properties: CouponPropertiesModel }>();
+
+    return properties;
   }
 
   public static async modifyCoupon(
@@ -134,13 +147,11 @@ export class Ride {
     let discountId: string | undefined;
     let discountGroupId: string | undefined;
     if (couponId) {
-      const coupon = await this.getCoupon(userId, couponId);
-      if (!coupon.properties || !coupon.properties.openapi) {
-        throw new InternalError('적용할 수 없는 쿠폰입니다.', OPCODE.ERROR);
+      const properties = await this.redeemCoupon(userId, couponId);
+      if (properties.openapi) {
+        discountId = properties.openapi.discountId;
+        discountGroupId = properties.openapi.discountGroupId;
       }
-
-      discountId = coupon.properties.openapi.discountId;
-      discountGroupId = coupon.properties.openapi.discountGroupId;
     }
 
     const { rideId } = await getPlatformClient()
@@ -158,10 +169,6 @@ export class Ride {
         },
       })
       .json();
-
-    if (discountId && discountGroupId) {
-      await this.modifyCoupon(userId, couponId, { usedAt: new Date() });
-    }
 
     const properties = { openapi: { rideId } };
     const locations = { create: { latitude, longitude } };
@@ -197,18 +204,18 @@ export class Ride {
     const { couponId } = await Joi.object({
       couponId: Joi.string().uuid().allow(null).optional(),
     }).validateAsync(props);
+
+    if (couponId === ride.couponId) return;
     const rideId = (<RideProperties>(<unknown>properties)).openapi.rideId;
     let discountId: string | undefined;
     let discountGroupId: string | undefined;
 
     if (couponId) {
-      const coupon = await this.getCoupon(userId, couponId);
-      if (!coupon.properties || !coupon.properties.openapi) {
-        throw new InternalError('적용할 수 없는 쿠폰입니다.', OPCODE.ERROR);
+      const properties = await this.redeemCoupon(userId, couponId);
+      if (properties.openapi) {
+        discountId = properties.openapi.discountId;
+        discountGroupId = properties.openapi.discountGroupId;
       }
-
-      discountId = coupon.properties.openapi.discountId;
-      discountGroupId = coupon.properties.openapi.discountGroupId;
     }
 
     if (ride.couponId) {
@@ -219,11 +226,10 @@ export class Ride {
       json: { discountId, discountGroupId },
     });
 
-    if (couponId) {
-      const { rideId } = ride;
-      await this.modifyCoupon(userId, couponId, { usedAt: new Date() });
-      await prisma.rideModel.update({ where: { rideId }, data: { couponId } });
-    }
+    await prisma.rideModel.update({
+      where: { rideId: ride.rideId },
+      data: { couponId },
+    });
   }
 
   public static async lightsOn(ride: RideModel): Promise<void> {
@@ -406,11 +412,8 @@ export class Ride {
       await schema.validateAsync(props);
 
     const orderBy = { [orderByField]: orderBySort };
-    const where = {
-      userId,
-      OR: [{ kickboardCode: { contains: search } }],
-    };
-
+    const where: Prisma.RideModelWhereInput = { userId };
+    if (search) where.OR = [{ kickboardCode: { contains: search } }];
     const [total, rides] = await prisma.$transaction([
       prisma.rideModel.count({ where }),
       prisma.rideModel.findMany({ where, take, skip, orderBy }),
