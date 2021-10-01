@@ -28,7 +28,7 @@ export function LicenseMiddleware(): Callback {
 
     const { userId } = req.loggined.user;
     const { license } = await accountsClient
-      .get(`users/${userId}/license`)
+      .get(`users/${userId}/license?orThrow=true`)
       .json();
 
     req.loggined.license = {

@@ -17,7 +17,7 @@ function getAccountsToken(props: {
       const opts = { json: true };
       const decodedPayload: any = jwt.decode(accountsAccessKey, opts);
       if (decodedPayload.exp * 1000 > Date.now()) return accountsAccessKey;
-    } catch (err) {}
+    } catch (err: any) {}
   }
 
   const sub = 'coreservice-accounts';
@@ -85,7 +85,7 @@ function getPaymentsToken(props: {
       const opts = { json: true };
       const decodedPayload: any = jwt.decode(paymentsAccessKey, opts);
       if (decodedPayload.exp * 1000 > Date.now()) return paymentsAccessKey;
-    } catch (err) {}
+    } catch (err: any) {}
   }
 
   const sub = 'coreservice-payments';
