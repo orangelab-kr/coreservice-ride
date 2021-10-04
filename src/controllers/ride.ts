@@ -1,15 +1,14 @@
 import { LocationModel, Prisma, RideModel } from '@prisma/client';
-import { $$$, UserModel } from '..';
 import {
-  Database,
+  $$$,
   getPaymentsClient,
   getPlatformClient,
   InternalError,
   Joi,
   OPCODE,
-} from '../tools';
-
-const { prisma } = Database;
+  prisma,
+  UserModel,
+} from '..';
 
 export interface RideProperties {
   openapi: { rideId: string };

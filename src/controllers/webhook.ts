@@ -1,5 +1,4 @@
-import { Ride } from '..';
-import { Database } from '../tools';
+import { prisma, Ride } from '..';
 
 export interface WebhookTerminate {
   requestId: string;
@@ -76,8 +75,6 @@ export interface WebhookTerminate {
     deletedAt: null;
   };
 }
-
-const { prisma } = Database;
 
 export class Webhook {
   public static async onTerminate(payload: WebhookTerminate): Promise<void> {
