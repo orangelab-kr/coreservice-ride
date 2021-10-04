@@ -7,10 +7,10 @@ import {
   getKickboardsRouter,
   getWebhookRouter,
   LicenseMiddleware,
-  OPCODE,
   PaymentsMiddleware,
   PromiseMiddleware,
   Region,
+  RESULT,
   UserMiddleware,
   Wrapper,
 } from '..';
@@ -30,11 +30,8 @@ export function getRouter(): Router {
 
   router.get(
     '/',
-    Wrapper(async (_req, res) => {
-      res.json({
-        opcode: OPCODE.SUCCESS,
-        ...clusterInfo,
-      });
+    Wrapper(async () => {
+      throw RESULT.SUCCESS({ details: clusterInfo });
     })
   );
 
@@ -46,22 +43,24 @@ export function getRouter(): Router {
       LicenseMiddleware(),
       PaymentsMiddleware()
     ),
-    Wrapper(async (req, res) => res.json({ opcode: OPCODE.SUCCESS }))
+    Wrapper(async () => {
+      throw RESULT.SUCCESS();
+    })
   );
 
   router.get(
     '/regions',
-    Wrapper(async (req, res) => {
+    Wrapper(async () => {
       const regions = await Region.getRegions();
-      res.json({ opcode: OPCODE.SUCCESS, regions });
+      throw RESULT.SUCCESS({ details: { regions } });
     })
   );
 
   router.get(
     '/location',
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const geofence = await Region.getCurrentGeofence(req.query);
-      res.json({ opcode: OPCODE.SUCCESS, geofence });
+      throw RESULT.SUCCESS({ details: { geofence } });
     })
   );
 

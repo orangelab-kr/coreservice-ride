@@ -1,12 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs';
-import {
-  Callback,
-  getAccountsClient,
-  InternalError,
-  logger,
-  OPCODE,
-  Wrapper,
-} from '..';
+import { getAccountsClient, RESULT, Wrapper, WrapperCallback } from '..';
 
 export interface LicenseModel {
   licenseId: string;
@@ -18,14 +11,11 @@ export interface LicenseModel {
   updatedAt: Dayjs;
 }
 
-export function LicenseMiddleware(): Callback {
+export function LicenseMiddleware(): WrapperCallback {
   const accountsClient = getAccountsClient();
 
   return Wrapper(async (req, res, next) => {
-    if (!req.loggined) {
-      throw new InternalError('면허 인증 후 이용할 수 있습니다.', OPCODE.ERROR);
-    }
-
+    if (!req.loggined) throw RESULT.REQUIRED_LOGIN();
     const { userId } = req.loggined.user;
     const { license } = await accountsClient
       .get(`users/${userId}/license?orThrow=true`)

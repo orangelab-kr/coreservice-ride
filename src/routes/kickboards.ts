@@ -1,23 +1,23 @@
 import { Router } from 'express';
-import { Kickboard, OPCODE, Wrapper } from '..';
+import { Kickboard, RESULT, Wrapper } from '..';
 
 export function getKickboardsRouter(): Router {
   const router = Router();
 
   router.get(
     '/',
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const kickboards = await Kickboard.getNearKickboard(req.query);
-      res.json({ opcode: OPCODE.SUCCESS, kickboards });
+      throw RESULT.SUCCESS({ details: { kickboards } });
     })
   );
 
   router.get(
     '/:kickboardCode',
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const kickboardCode = String(req.params.kickboardCode);
       const kickboard = await Kickboard.getKickboard(kickboardCode);
-      res.json({ opcode: OPCODE.SUCCESS, kickboard });
+      throw RESULT.SUCCESS({ details: { kickboard } });
     })
   );
 

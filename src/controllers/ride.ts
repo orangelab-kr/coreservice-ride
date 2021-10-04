@@ -3,10 +3,9 @@ import {
   $$$,
   getPaymentsClient,
   getPlatformClient,
-  InternalError,
   Joi,
-  OPCODE,
   prisma,
+  RESULT,
   UserModel,
 } from '..';
 
@@ -91,7 +90,7 @@ export class Ride {
   ): Promise<CouponModel> {
     const { coupon } = await getPaymentsClient()
       .get(`${userId}/coupons/${couponId}`)
-      .json<{ opcode: OPCODE; coupon: CouponModel }>();
+      .json<{ opcode: number; coupon: CouponModel }>();
 
     return coupon;
   }
@@ -102,7 +101,7 @@ export class Ride {
   ): Promise<CouponPropertiesModel> {
     const { properties } = await getPaymentsClient()
       .get(`${userId}/coupons/${couponId}/redeem`)
-      .json<{ opcode: OPCODE; properties: CouponPropertiesModel }>();
+      .json<{ opcode: number; properties: CouponPropertiesModel }>();
 
     return properties;
   }
@@ -118,7 +117,7 @@ export class Ride {
     const paymentsClient = getPaymentsClient();
     const { coupon } = await paymentsClient
       .post(`${userId}/coupons/${couponId}`, { json: props })
-      .json<{ opcode: OPCODE; coupon: CouponModel }>();
+      .json<{ opcode: number; coupon: CouponModel }>();
 
     return coupon;
   }
@@ -284,7 +283,7 @@ export class Ride {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     const { timeline } = await getPlatformClient()
       .get(`ride/rides/${openapi.rideId}/timeline`)
-      .json<{ opcode: OPCODE; timeline: OpenApiRideTimeline[] }>();
+      .json<{ opcode: number; timeline: OpenApiRideTimeline[] }>();
     return timeline;
   }
 
@@ -301,7 +300,7 @@ export class Ride {
     const searchParams = await schema.validateAsync(props);
     const { pricing } = await getPlatformClient()
       .get(`ride/rides/${openapi.rideId}/pricing`, { searchParams })
-      .json<{ opcode: OPCODE; pricing: OpenApiRidePricing }>();
+      .json<{ opcode: number; pricing: OpenApiRidePricing }>();
     return pricing;
   }
 
@@ -317,7 +316,7 @@ export class Ride {
 
     await getPlatformClient()
       .post(`ride/rides/${openapi.rideId}/photo`, { json })
-      .json<{ opcode: OPCODE }>();
+      .json<{ opcode: number }>();
 
     return () =>
       prisma.rideModel.update({ where: { rideId }, data: { photo } });
@@ -338,10 +337,7 @@ export class Ride {
     user: UserModel
   ): Promise<RideModel> {
     const ride = await $$$(this.getCurrentRide(user));
-    if (!ride) {
-      throw new InternalError('현재 라이드 중이지 않습니다.', OPCODE.NOT_FOUND);
-    }
-
+    if (!ride) throw RESULT.CURRENT_NOT_RIDING();
     return ride;
   }
 
@@ -350,10 +346,7 @@ export class Ride {
     rideId: string
   ): Promise<RideModel> {
     const ride = await $$$(this.getRide(user, rideId));
-    if (!ride) {
-      throw new InternalError('라이드를 찾을 수 없습니다.', OPCODE.NOT_FOUND);
-    }
-
+    if (!ride) throw RESULT.CANNOT_FIND_RIDE();
     return ride;
   }
 
@@ -370,10 +363,7 @@ export class Ride {
     rideId: string
   ): Promise<RideModel> {
     const ride = await $$$(this.getRideByOpenApiRideId(rideId));
-    if (!ride) {
-      throw new InternalError('라이드를 찾을 수 없습니다.', OPCODE.NOT_FOUND);
-    }
-
+    if (!ride) throw RESULT.CANNOT_FIND_RIDE();
     return ride;
   }
 

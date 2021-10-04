@@ -5,9 +5,9 @@ import {
   getCurrentLightsRouter,
   getCurrentLockRouter,
   LicenseMiddleware,
-  OPCODE,
   PaymentsMiddleware,
   PromiseMiddleware,
+  RESULT,
   Ride,
   Wrapper,
 } from '../..';
@@ -25,9 +25,9 @@ export function getCurrentRouter(): Router {
   router.get(
     '/',
     CurrentRideMiddleware({ allowNull: true }),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const { ride } = req.loggined;
-      res.json({ opcode: OPCODE.SUCCESS, ride });
+      throw RESULT.SUCCESS({ details: { ride } });
     })
   );
 
@@ -39,10 +39,10 @@ export function getCurrentRouter(): Router {
       LicenseMiddleware(),
       PaymentsMiddleware()
     ),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const { query, loggined } = req;
       const ride = await $$$(Ride.start(loggined.user, query as any));
-      res.json({ opcode: OPCODE.SUCCESS, ride });
+      throw RESULT.SUCCESS({ details: { ride } });
     })
   );
 
@@ -50,9 +50,9 @@ export function getCurrentRouter(): Router {
   router.delete(
     '/',
     CurrentRideMiddleware(),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       await Ride.terminate(req.loggined.ride, req.query as any);
-      res.json({ opcode: OPCODE.SUCCESS });
+      throw RESULT.SUCCESS();
     })
   );
 
@@ -60,9 +60,9 @@ export function getCurrentRouter(): Router {
   router.get(
     '/status',
     CurrentRideMiddleware(),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const status = await Ride.getStatus(req.loggined.ride);
-      res.json({ opcode: OPCODE.SUCCESS, status });
+      throw RESULT.SUCCESS({ details: { status } });
     })
   );
 
@@ -70,10 +70,10 @@ export function getCurrentRouter(): Router {
   router.post(
     '/coupon',
     CurrentRideMiddleware(),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const { loggined, body } = req;
       await Ride.changeCoupon(loggined.ride, body);
-      res.json({ opcode: OPCODE.SUCCESS });
+      throw RESULT.SUCCESS();
     })
   );
 
@@ -81,10 +81,10 @@ export function getCurrentRouter(): Router {
   router.get(
     '/location',
     CurrentRideMiddleware(),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const { query, loggined } = req;
       await $$$(Ride.addLocation(loggined.ride, query as any));
-      res.json({ opcode: OPCODE.SUCCESS });
+      throw RESULT.SUCCESS();
     })
   );
 
@@ -92,9 +92,9 @@ export function getCurrentRouter(): Router {
   router.get(
     '/timeline',
     CurrentRideMiddleware(),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const timeline = await Ride.getTimeline(req.loggined.ride);
-      res.json({ opcode: OPCODE.SUCCESS, timeline });
+      throw RESULT.SUCCESS({ details: { timeline } });
     })
   );
 
@@ -102,10 +102,10 @@ export function getCurrentRouter(): Router {
   router.get(
     '/pricing',
     CurrentRideMiddleware(),
-    Wrapper(async (req, res) => {
+    Wrapper(async (req) => {
       const { loggined, query } = req;
       const pricing = await Ride.getPricing(loggined.ride, query);
-      res.json({ opcode: OPCODE.SUCCESS, pricing });
+      throw RESULT.SUCCESS({ details: { pricing } });
     })
   );
 
