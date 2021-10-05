@@ -11,5 +11,6 @@
   "CANNOT_FIND_RIDE": "라이드가 존재하지 않습니다.",
   "COUPON_INVALID_DAY_OF_WEEK": "오늘은 사용이 불가능한 요일입니다.",
   "COUPON_LIMIT_COUNT": "해당 쿠폰은 %s회까지만 사용 가능합니다.",
-  "COUPON_LIMIT_COUNT_OF_PERIOD": "해당 쿠폰은 %s일에 %s회까지만 사용 가능합니다."
+  "COUPON_LIMIT_COUNT_OF_PERIOD": "해당 쿠폰은 %s일에 %s회까지만 사용 가능합니다.",
+  "COUPON_NO_AVAILABLE_TIME": "해당 쿠폰은 지금 시간에 사용할 수 없습니다."
 }

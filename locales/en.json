@@ -11,5 +11,6 @@
   "CANNOT_FIND_RIDE": "Ride does not exist.",
   "COUPON_INVALID_DAY_OF_WEEK": "Today is an unavailable day of week.",
   "COUPON_LIMIT_COUNT": "This coupon can only be used up to %s times.",
-  "COUPON_LIMIT_COUNT_OF_PERIOD": "This coupon can only be used %1$s times of %2$s days."
+  "COUPON_LIMIT_COUNT_OF_PERIOD": "This coupon can only be used %1$s times of %2$s days.",
+  "COUPON_NO_AVAILABLE_TIME": "This coupon cannot be used at this time."
 }

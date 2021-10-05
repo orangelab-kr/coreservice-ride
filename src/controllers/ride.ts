@@ -107,6 +107,7 @@ export interface CouponGroupPropertiesModel {
     dayOfWeek?: number;
     period?: number;
     count?: number;
+    time?: [number, number][];
   };
 }
 
@@ -125,11 +126,11 @@ export class Ride {
   public static async verifyCouponProperties(
     coupon: CouponModel
   ): Promise<void> {
-    console.log(coupon);
     if (!coupon.couponGroup.properties?.coreservice) return;
-    const { dayOfWeek, period, count } =
+    const { dayOfWeek, period, count, time } =
       coupon.couponGroup.properties.coreservice;
 
+    const today = dayjs();
     if (dayOfWeek) {
       const todayDayOfWeek = dayjs().day();
       const allowDayOfWeek = dayOfWeek
@@ -139,7 +140,6 @@ export class Ride {
         .reverse()
         .map((v) => v === '1');
 
-      console.log(allowDayOfWeek);
       if (!allowDayOfWeek[todayDayOfWeek]) {
         throw RESULT.COUPON_INVALID_DAY_OF_WEEK();
       }
@@ -148,7 +148,7 @@ export class Ride {
     if (count) {
       const { userId, couponId } = coupon;
       const startedAt = period
-        ? dayjs().subtract(period, 'days').toDate()
+        ? today.subtract(period, 'days').toDate()
         : undefined;
 
       const { total } = await Ride.getRides({
@@ -158,13 +158,18 @@ export class Ride {
         take: 0,
       });
 
-      console.log(total);
       if (total >= count) {
         const args = [`${count}`, `${period}`];
         throw period
           ? RESULT.COUPON_LIMIT_COUNT_OF_PERIOD({ args })
           : RESULT.COUPON_LIMIT_COUNT({ args });
       }
+    }
+
+    if (time) {
+      const minute = today.minute() + today.hour() * 60;
+      const exists = time.find(([s, e]) => minute >= s && minute <= e);
+      if (!exists) throw RESULT.COUPON_NO_AVAILABLE_TIME();
     }
   }
 
