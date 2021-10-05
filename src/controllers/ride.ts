@@ -1,4 +1,5 @@
 import { LocationModel, Prisma, RideModel } from '@prisma/client';
+import dayjs from 'dayjs';
 import {
   $$$,
   getPaymentsClient,
@@ -67,9 +68,24 @@ export interface CouponModel {
   couponId: string;
   userId: string;
   couponGroupId: string;
+  couponGroup: CouponGroupModel;
   properties: CouponPropertiesModel;
   usedAt: Date | null;
   expiredAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: null;
+}
+
+export interface CouponGroupModel {
+  couponGroupId: string;
+  code: string;
+  type: 'LONGTIME' | 'ONETIME';
+  name: string;
+  description: string;
+  validity: number;
+  limit: number;
+  properties: CouponGroupPropertiesModel;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: null;
@@ -83,8 +99,19 @@ export interface CouponPropertiesModel {
   };
 }
 
+export interface CouponGroupPropertiesModel {
+  openapi?: {
+    discountGroupId: string;
+  };
+  coreservice?: {
+    dayOfWeek?: number;
+    period?: number;
+    count?: number;
+  };
+}
+
 export class Ride {
-  public static async getCoupon(
+  public static async getCouponOrThrow(
     userId: string,
     couponId: string
   ): Promise<CouponModel> {
@@ -93,6 +120,52 @@ export class Ride {
       .json<{ opcode: number; coupon: CouponModel }>();
 
     return coupon;
+  }
+
+  public static async verifyCouponProperties(
+    coupon: CouponModel
+  ): Promise<void> {
+    console.log(coupon);
+    if (!coupon.couponGroup.properties?.coreservice) return;
+    const { dayOfWeek, period, count } =
+      coupon.couponGroup.properties.coreservice;
+
+    if (dayOfWeek) {
+      const todayDayOfWeek = dayjs().day();
+      const allowDayOfWeek = dayOfWeek
+        .toString(2)
+        .padStart(7, '0')
+        .split('')
+        .reverse()
+        .map((v) => v === '1');
+
+      console.log(allowDayOfWeek);
+      if (!allowDayOfWeek[todayDayOfWeek]) {
+        throw RESULT.COUPON_INVALID_DAY_OF_WEEK();
+      }
+    }
+
+    if (count) {
+      const { userId, couponId } = coupon;
+      const startedAt = period
+        ? dayjs().subtract(period, 'days').toDate()
+        : undefined;
+
+      const { total } = await Ride.getRides({
+        userId,
+        couponId,
+        startedAt,
+        take: 0,
+      });
+
+      console.log(total);
+      if (total >= count) {
+        const args = [`${count}`, `${period}`];
+        throw period
+          ? RESULT.COUPON_LIMIT_COUNT_OF_PERIOD({ args })
+          : RESULT.COUPON_LIMIT_COUNT({ args });
+      }
+    }
   }
 
   public static async redeemCoupon(
@@ -145,6 +218,8 @@ export class Ride {
     let discountId: string | undefined;
     let discountGroupId: string | undefined;
     if (couponId) {
+      const coupon = await this.getCouponOrThrow(userId, couponId);
+      await this.verifyCouponProperties(coupon);
       const properties = await this.redeemCoupon(userId, couponId);
       if (properties.openapi) {
         discountId = properties.openapi.discountId;
@@ -203,12 +278,14 @@ export class Ride {
       couponId: Joi.string().uuid().allow(null).optional(),
     }).validateAsync(props);
 
-    if (couponId === ride.couponId) return;
+    // if (couponId === ride.couponId) return;
     const rideId = (<RideProperties>(<unknown>properties)).openapi.rideId;
     let discountId: string | undefined;
     let discountGroupId: string | undefined;
 
     if (couponId) {
+      const coupon = await this.getCouponOrThrow(userId, couponId);
+      await this.verifyCouponProperties(coupon);
       const properties = await this.redeemCoupon(userId, couponId);
       if (properties.openapi) {
         discountId = properties.openapi.discountId;
@@ -376,20 +453,27 @@ export class Ride {
   }
 
   public static async getRides(
-    user: UserModel,
     props: {
       take?: number;
       skip?: number;
       search?: string;
+      userId?: string;
+      couponId?: string;
+      startedAt?: Date;
+      endedAt?: Date;
       orderByField?: 'createdAt' | 'updatedAt' | 'deletedAt' | 'endedAt';
       orderBySort?: 'asc' | 'desc';
-    }
+    },
+    user?: UserModel
   ): Promise<{ total: number; rides: RideModel[] }> {
-    const { userId } = user;
     const schema = Joi.object({
       take: Joi.number().default(10).optional(),
       skip: Joi.number().default(0).optional(),
       search: Joi.string().allow('').optional(),
+      userId: Joi.string().uuid().optional(),
+      couponId: Joi.string().uuid().optional(),
+      startedAt: Joi.date().default(new Date(0)).optional(),
+      endedAt: Joi.date().default(new Date()).optional(),
       orderByField: Joi.string()
         .valid('endedAt', 'createdAt', 'updatedAt', 'deletedAt')
         .default('createdAt')
@@ -397,12 +481,35 @@ export class Ride {
       orderBySort: Joi.string().valid('asc', 'desc').default('desc').optional(),
     });
 
-    const { take, skip, search, orderByField, orderBySort } =
-      await schema.validateAsync(props);
+    const {
+      take,
+      skip,
+      search,
+      userId,
+      couponId,
+      startedAt,
+      endedAt,
+      orderByField,
+      orderBySort,
+    } = await schema.validateAsync(props);
 
     const orderBy = { [orderByField]: orderBySort };
-    const where: Prisma.RideModelWhereInput = { userId };
-    if (search) where.OR = [{ kickboardCode: { contains: search } }];
+    const where: Prisma.RideModelWhereInput = {
+      createdAt: { gte: startedAt, lte: endedAt },
+    };
+
+    if (search) {
+      where.OR = [
+        { kickboardCode: { contains: search } },
+        { rideId: { contains: search } },
+        { userId: { contains: search } },
+        { couponId: { contains: search } },
+      ];
+    }
+
+    if (userId) where.userId = userId;
+    if (couponId) where.couponId = couponId;
+    if (user) where.userId = userId;
     const [total, rides] = await prisma.$transaction([
       prisma.rideModel.count({ where }),
       prisma.rideModel.findMany({ where, take, skip, orderBy }),

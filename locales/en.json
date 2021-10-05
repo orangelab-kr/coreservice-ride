@@ -8,5 +8,8 @@
   "INVALID_API": "Invalid API address.",
   "CURRENT_NOT_RIDING": "Not currently riding.",
   "ALREADY_RIDING": "Already riding.",
-  "CANNOT_FIND_RIDE": "Ride does not exist."
+  "CANNOT_FIND_RIDE": "Ride does not exist.",
+  "COUPON_INVALID_DAY_OF_WEEK": "Today is an unavailable day of week.",
+  "COUPON_LIMIT_COUNT": "This coupon can only be used up to %s times.",
+  "COUPON_LIMIT_COUNT_OF_PERIOD": "This coupon can only be used %1$s times of %2$s days."
 }

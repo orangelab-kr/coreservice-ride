@@ -8,5 +8,8 @@
   "INVALID_API": "잘못된 API 주소입니다.",
   "CURRENT_NOT_RIDING": "현재 라이드 중이지 않습니다.",
   "ALREADY_RIDING": "이미 라이드를 하고 있습니다.",
-  "CANNOT_FIND_RIDE": "라이드가 존재하지 않습니다."
+  "CANNOT_FIND_RIDE": "라이드가 존재하지 않습니다.",
+  "COUPON_INVALID_DAY_OF_WEEK": "오늘은 사용이 불가능한 요일입니다.",
+  "COUPON_LIMIT_COUNT": "해당 쿠폰은 %s회까지만 사용 가능합니다.",
+  "COUPON_LIMIT_COUNT_OF_PERIOD": "해당 쿠폰은 %s일에 %s회까지만 사용 가능합니다."
 }

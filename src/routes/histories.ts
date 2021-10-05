@@ -8,7 +8,7 @@ export function getHistoriesRouter(): Router {
     '/',
     Wrapper(async (req) => {
       const { loggined, query } = req;
-      const { rides, total } = await Ride.getRides(loggined.user, query);
+      const { rides, total } = await Ride.getRides(query, loggined.user);
       throw RESULT.SUCCESS({ details: { rides, total } });
     })
   );
