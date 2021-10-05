@@ -117,7 +117,7 @@ export class Ride {
     couponId: string
   ): Promise<CouponModel> {
     const { coupon } = await getPaymentsClient()
-      .get(`${userId}/coupons/${couponId}`)
+      .get(`users/${userId}/coupons/${couponId}`)
       .json<{ opcode: number; coupon: CouponModel }>();
 
     return coupon;
@@ -178,7 +178,7 @@ export class Ride {
     couponId: string
   ): Promise<CouponPropertiesModel> {
     const { properties } = await getPaymentsClient()
-      .get(`${userId}/coupons/${couponId}/redeem`)
+      .get(`users/${userId}/coupons/${couponId}/redeem`)
       .json<{ opcode: number; properties: CouponPropertiesModel }>();
 
     return properties;
@@ -194,7 +194,7 @@ export class Ride {
   ): Promise<CouponModel> {
     const paymentsClient = getPaymentsClient();
     const { coupon } = await paymentsClient
-      .post(`${userId}/coupons/${couponId}`, { json: props })
+      .post(`users/${userId}/coupons/${couponId}`, { json: props })
       .json<{ opcode: number; coupon: CouponModel }>();
 
     return coupon;
@@ -283,7 +283,7 @@ export class Ride {
       couponId: Joi.string().uuid().allow(null).optional(),
     }).validateAsync(props);
 
-    // if (couponId === ride.couponId) return;
+    if (couponId === ride.couponId) return;
     const rideId = (<RideProperties>(<unknown>properties)).openapi.rideId;
     let discountId: string | undefined;
     let discountGroupId: string | undefined;

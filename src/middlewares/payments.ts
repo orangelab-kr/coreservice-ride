@@ -6,7 +6,7 @@ export function PaymentsMiddleware(): WrapperCallback {
   return Wrapper(async (req, res, next) => {
     if (!req.loggined) throw RESULT.REQUIRED_LOGIN();
     const { userId } = req.loggined.user;
-    await paymentsClient.get(`${userId}/ready`);
+    await paymentsClient.get(`users/${userId}/ready`);
     next();
   });
 }
