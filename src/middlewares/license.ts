@@ -1,5 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs';
-import { getAccountsClient, RESULT, Wrapper, WrapperCallback } from '..';
+import { getCoreServiceClient, RESULT, Wrapper, WrapperCallback } from '..';
 
 export interface LicenseModel {
   licenseId: string;
@@ -12,12 +12,10 @@ export interface LicenseModel {
 }
 
 export function LicenseMiddleware(): WrapperCallback {
-  const accountsClient = getAccountsClient();
-
   return Wrapper(async (req, res, next) => {
     if (!req.loggined) throw RESULT.REQUIRED_LOGIN();
     const { userId } = req.loggined.user;
-    const { license } = await accountsClient
+    const { license } = await getCoreServiceClient('accounts')
       .get(`users/${userId}/license?orThrow=true`)
       .json();
 

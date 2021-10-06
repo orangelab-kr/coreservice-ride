@@ -1,11 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs';
-import {
-  getAccountsClient,
-  logger,
-  RESULT,
-  Wrapper,
-  WrapperCallback,
-} from '..';
+import { getCoreServiceClient, Wrapper, WrapperCallback } from '..';
 
 export interface UserModel {
   userId: string;
@@ -19,40 +13,29 @@ export interface UserModel {
 }
 
 export function UserMiddleware(): WrapperCallback {
-  const accountsClient = getAccountsClient();
-
   return Wrapper(async (req, res, next) => {
-    try {
-      const { headers } = req;
-      const { authorization } = headers;
-      if (typeof authorization !== 'string') throw new Error();
-      const sessionId = authorization.substr(7);
-      const { user } = await accountsClient
-        .post(`users/authorize`, { json: { sessionId } })
-        .json();
+    const { headers } = req;
+    const { authorization } = headers;
+    if (typeof authorization !== 'string') throw new Error();
+    const sessionId = authorization.substr(7);
+    const { user } = await getCoreServiceClient('accounts')
+      .post(`users/authorize`, { json: { sessionId } })
+      .json();
 
-      req.loggined = {
-        sessionId,
-        user: {
-          userId: user.userId,
-          realname: user.realname,
-          phoneNo: user.phoneNo,
-          email: user.email,
-          birthday: dayjs(user.birthday),
-          usedAt: dayjs(user.usedAt),
-          createdAt: dayjs(user.createdAt),
-          updatedAt: dayjs(user.updatedAt),
-        },
-      };
+    req.loggined = {
+      sessionId,
+      user: {
+        userId: user.userId,
+        realname: user.realname,
+        phoneNo: user.phoneNo,
+        email: user.email,
+        birthday: dayjs(user.birthday),
+        usedAt: dayjs(user.usedAt),
+        createdAt: dayjs(user.createdAt),
+        updatedAt: dayjs(user.updatedAt),
+      },
+    };
 
-      next();
-    } catch (err: any) {
-      if (process.env.NODE_ENV !== 'prod') {
-        logger.error(err.message);
-        logger.error(err.stack);
-      }
-
-      throw RESULT.REQUIRED_LOGIN();
-    }
+    next();
   });
 }

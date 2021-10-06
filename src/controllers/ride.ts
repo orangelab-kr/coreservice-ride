@@ -2,7 +2,7 @@ import { LocationModel, Prisma, RideModel } from '@prisma/client';
 import dayjs from 'dayjs';
 import {
   $$$,
-  getPaymentsClient,
+  getCoreServiceClient,
   getPlatformClient,
   Joi,
   prisma,
@@ -116,7 +116,7 @@ export class Ride {
     userId: string,
     couponId: string
   ): Promise<CouponModel> {
-    const { coupon } = await getPaymentsClient()
+    const { coupon } = await getCoreServiceClient('payments')
       .get(`users/${userId}/coupons/${couponId}`)
       .json<{ opcode: number; coupon: CouponModel }>();
 
@@ -177,7 +177,7 @@ export class Ride {
     userId: string,
     couponId: string
   ): Promise<CouponPropertiesModel> {
-    const { properties } = await getPaymentsClient()
+    const { properties } = await getCoreServiceClient('payments')
       .get(`users/${userId}/coupons/${couponId}/redeem`)
       .json<{ opcode: number; properties: CouponPropertiesModel }>();
 
@@ -192,8 +192,7 @@ export class Ride {
       expiredAt?: Date | null;
     }
   ): Promise<CouponModel> {
-    const paymentsClient = getPaymentsClient();
-    const { coupon } = await paymentsClient
+    const { coupon } = await getCoreServiceClient('payments')
       .post(`users/${userId}/coupons/${couponId}`, { json: props })
       .json<{ opcode: number; coupon: CouponModel }>();
 
