@@ -201,11 +201,11 @@ export class Ride {
 
   public static async start(
     user: UserModel,
-    props: {
-      kickboardCode: string;
-      couponId: string;
-      latitude: number;
-      longitude: number;
+    props?: {
+      kickboardCode?: string;
+      couponId?: string;
+      latitude?: number;
+      longitude?: number;
     }
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
     const { userId, phoneNo: phone, realname, birthday } = user;
@@ -256,7 +256,7 @@ export class Ride {
 
   public static async terminate(
     ride: RideModel,
-    props: { latitude?: number; longitude?: number }
+    props?: { latitude?: number; longitude?: number }
   ): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     const schema = Joi.object({
@@ -335,7 +335,8 @@ export class Ride {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     return getPlatformClient()
       .get(`ride/rides/${openapi.rideId}/status`)
-      .json();
+      .json<{ opcode: number; status: RideStatus }>()
+      .then((res) => res.status);
   }
 
   public static async addLocation(
@@ -423,10 +424,10 @@ export class Ride {
   }
 
   public static async getRideOrThrow(
-    user: UserModel,
-    rideId: string
+    rideId: string,
+    user?: UserModel
   ): Promise<RideModel> {
-    const ride = await $$$(this.getRide(user, rideId));
+    const ride = await $$$(this.getRide(rideId, user));
     if (!ride) throw RESULT.CANNOT_FIND_RIDE();
     return ride;
   }
@@ -449,10 +450,10 @@ export class Ride {
   }
 
   public static async getRide(
-    user: UserModel,
-    rideId: string
+    rideId: string,
+    user?: UserModel
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel | null>> {
-    const { userId } = user;
+    const userId = user?.userId;
     return () => prisma.rideModel.findFirst({ where: { userId, rideId } });
   }
 

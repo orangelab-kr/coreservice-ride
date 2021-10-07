@@ -1,3 +1,4 @@
+import { RideModel } from '@prisma/client';
 import 'express';
 import { UserModel } from '../src';
 
@@ -8,7 +9,7 @@ declare global {
         sessionId: string;
         user: UserModel;
         license?: LicenseModel;
-        ride?: RideModel;
+        ride: RideModel;
       };
     }
   }

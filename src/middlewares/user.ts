@@ -22,7 +22,7 @@ export function UserMiddleware(): WrapperCallback {
       .post(`users/authorize`, { json: { sessionId } })
       .json();
 
-    req.loggined = {
+    const payload: any = {
       sessionId,
       user: {
         userId: user.userId,
@@ -36,6 +36,7 @@ export function UserMiddleware(): WrapperCallback {
       },
     };
 
+    req.loggined = payload;
     next();
   });
 }

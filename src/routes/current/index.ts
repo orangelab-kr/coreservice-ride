@@ -41,7 +41,7 @@ export function getCurrentRouter(): Router {
     ),
     Wrapper(async (req) => {
       const { query, loggined } = req;
-      const ride = await $$$(Ride.start(loggined.user, query as any));
+      const ride = await $$$(Ride.start(loggined.user, query));
       throw RESULT.SUCCESS({ details: { ride } });
     })
   );
@@ -51,7 +51,7 @@ export function getCurrentRouter(): Router {
     '/',
     CurrentRideMiddleware(),
     Wrapper(async (req) => {
-      await Ride.terminate(req.loggined.ride, req.query as any);
+      await Ride.terminate(req.loggined.ride, req.query);
       throw RESULT.SUCCESS();
     })
   );
@@ -83,7 +83,7 @@ export function getCurrentRouter(): Router {
     CurrentRideMiddleware(),
     Wrapper(async (req) => {
       const { query, loggined } = req;
-      await $$$(Ride.addLocation(loggined.ride, query as any));
+      await $$$(Ride.addLocation(loggined.ride, query));
       throw RESULT.SUCCESS();
     })
   );

@@ -8,8 +8,7 @@ export function RideMiddleware(): WrapperCallback {
     } = req;
 
     if (!user || typeof rideId !== 'string') throw RESULT.CANNOT_FIND_RIDE();
-    const ride = await Ride.getRideOrThrow(user, rideId);
-    req.loggined.ride = ride;
+    req.loggined.ride = await Ride.getRideOrThrow(rideId, user);
 
     next();
   });
