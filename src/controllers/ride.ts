@@ -456,6 +456,26 @@ export class Ride {
     return () => prisma.rideModel.findFirst({ where: { userId, rideId } });
   }
 
+  public static async modifyRide(
+    ride: RideModel,
+    props: {
+      userId: string;
+      kickboardCode: string;
+      properties: any;
+      price: number;
+    }
+  ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
+    const { rideId } = ride;
+    const where = { rideId };
+    const data = await Joi.object({
+      userId: Joi.string().uuid().optional(),
+      kickboardCode: Joi.string().length(6).optional(),
+      properties: Joi.object().allow(null).optional(),
+      price: Joi.number().optional(),
+    }).validateAsync(props);
+    return () => prisma.rideModel.update({ where, data });
+  }
+
   public static async getRides(
     props: {
       take?: number;
