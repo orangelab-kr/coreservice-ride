@@ -5,6 +5,7 @@ import {
   InternalCurrentRideMiddleware,
   InternalLicenseMiddleware,
   InternalPaymentsMiddleware,
+  InternalRideByOpenApiRideIdMiddleware,
   InternalRideMiddleware,
   InternalUserByQueryMiddleware,
   PromiseMiddleware,
@@ -29,6 +30,15 @@ export function getInternalRidesRouter(): Router {
     '/:rideId/lock',
     InternalRideMiddleware({ throwIfRideEnd: true }),
     getInternalRidesLightsRouter()
+  );
+
+  router.get(
+    '/byOpenAPI/:rideId',
+    InternalRideByOpenApiRideIdMiddleware(),
+    Wrapper(async (req) => {
+      const { ride } = req.internal;
+      throw RESULT.SUCCESS({ details: { ride } });
+    })
   );
 
   router.get(

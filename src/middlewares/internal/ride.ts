@@ -21,6 +21,27 @@ export function InternalRideMiddleware(props?: {
   });
 }
 
+export function InternalRideByOpenApiRideIdMiddleware(props?: {
+  throwIfRideEnd?: boolean;
+}): WrapperCallback {
+  const { throwIfRideEnd } = {
+    throwIfRideEnd: false,
+    ...props,
+  };
+
+  return Wrapper(async (req, res, next) => {
+    const {
+      params: { rideId },
+    } = req;
+
+    if (typeof rideId !== 'string') throw RESULT.CANNOT_FIND_RIDE();
+    const ride = await Ride.getRideByOpenApiRideIdOrThrow(rideId);
+    if (throwIfRideEnd && ride.endedAt) throw RESULT.CURRENT_NOT_RIDING();
+    req.internal.ride = ride;
+    next();
+  });
+}
+
 export function InternalCurrentRideMiddleware(props?: {
   allowNull?: boolean;
   throwIfRiding?: boolean;
