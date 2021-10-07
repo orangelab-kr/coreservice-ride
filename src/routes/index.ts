@@ -4,8 +4,10 @@ import {
   CurrentRideMiddleware,
   getCurrentRouter,
   getHistoriesRouter,
+  getInternalRouter,
   getKickboardsRouter,
   getWebhookRouter,
+  InternalMiddleware,
   LicenseMiddleware,
   PaymentsMiddleware,
   PromiseMiddleware,
@@ -17,6 +19,7 @@ import {
 
 export * from './current';
 export * from './histories';
+export * from './internal';
 export * from './kickboards';
 export * from './webhook';
 
@@ -26,6 +29,7 @@ export function getRouter(): Router {
   router.use('/kickboards', getKickboardsRouter());
   router.use('/current', UserMiddleware(), getCurrentRouter());
   router.use('/histories', UserMiddleware(), getHistoriesRouter());
+  router.use('/internal', InternalMiddleware(), getInternalRouter());
   router.use('/webhook', getWebhookRouter());
 
   router.get(
