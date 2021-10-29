@@ -10,7 +10,7 @@ import { RESULT, WrapperResult } from '.';
 
 const retry = 0;
 const email = 'system@hikick.kr';
-const issuer = process.env.HIKICK_CORESERVICE_ACCOUNTS_KEY;
+const issuer = process.env.HIKICK_CORESERVICE_ACCOUNTS_URL;
 const tokens: { [key: string]: string } = {};
 const services: { [key: string]: Got } = {};
 
@@ -46,7 +46,7 @@ function getAccessToken(service: string): string {
   return token;
 }
 
-export function getCoreServiceClient(service: string, req?: Request): Got {
+export function getCoreServiceClient(service: string): Got {
   if (services[service]) return services[service];
   const prefixUrl = getServiceURL(service);
   const onBeforeRequest: BeforeRequestHook = (opts) => {

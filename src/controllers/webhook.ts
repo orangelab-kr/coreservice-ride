@@ -1,4 +1,4 @@
-import { prisma, Ride } from '..';
+import { getCoreServiceClient, prisma, Ride } from '..';
 
 export interface WebhookTerminate {
   requestId: string;
@@ -78,11 +78,50 @@ export interface WebhookTerminate {
 
 export class Webhook {
   public static async onTerminate(payload: WebhookTerminate): Promise<void> {
-    const { rideId: openapiRideId, terminatedAt: endedAt } = payload.data;
+    const {
+      userId,
+      kickboardCode,
+      rideId: openapiRideId,
+      terminatedAt: endedAt,
+      terminatedType,
+    } = payload.data;
     const { rideId } = await Ride.getRideByOpenApiRideIdOrThrow(openapiRideId);
     await prisma.rideModel.update({
       where: { rideId },
       data: { endedAt },
     });
+
+    switch (terminatedType) {
+      case 'USER_REQUESTED':
+        await getCoreServiceClient('accounts').post({
+          url: `users/${userId}/notifications`,
+          json: {
+            type: 'info',
+            title: `🛴 ${kickboardCode} 킥보드 / 이용 종료`,
+            description: `라이드가 정상적으로 종료되었습니다. 이용해주셔서 감사합니다.`,
+          },
+        });
+        break;
+      case 'ADMIN_REQUESTED':
+        await getCoreServiceClient('accounts').post({
+          url: `users/${userId}/notifications`,
+          json: {
+            type: 'info',
+            title: `🛴 ${kickboardCode} 킥보드 / 이용 종료`,
+            description: `관리자에 의해 강제로 라이드가 종료되었습니다.`,
+          },
+        });
+        break;
+      case 'UNUSED':
+        await getCoreServiceClient('accounts').post({
+          url: `users/${userId}/notifications`,
+          json: {
+            type: 'info',
+            title: `🛴 ${kickboardCode} 킥보드 / 이용 종료`,
+            description: `킥보드가 15분 동안 움직임이 없어 자동으로 라이드가 종료되었습니다.`,
+          },
+        });
+        break;
+    }
   }
 }
