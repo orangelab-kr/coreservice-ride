@@ -122,6 +122,16 @@ export class Webhook {
           },
         });
         break;
+      case 'LOW_BATTEY':
+        await getCoreServiceClient('accounts').post({
+          url: `users/${userId}/notifications`,
+          json: {
+            type: 'info',
+            title: `🛴 ${kickboardCode} 킥보드 / 이용 종료`,
+            description: `킥보드의 배터리 잔량이 얼마남지 않아 자동으로 종료되었습니다.`,
+          },
+        });
+        break;
     }
   }
 }
