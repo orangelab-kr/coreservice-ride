@@ -109,5 +109,16 @@ export function getCurrentRouter(): Router {
     })
   );
 
+  // 속도 변경
+  router.get(
+    '/maxSpeed',
+    CurrentRideMiddleware(),
+    Wrapper(async (req) => {
+      const { loggined, query } = req;
+      await Ride.setMaxSpeed(loggined.ride, query);
+      throw RESULT.SUCCESS();
+    })
+  );
+
   return router;
 }

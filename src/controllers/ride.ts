@@ -338,6 +338,17 @@ export class Ride {
       .then(() => Ride.updateRideControl(ride, { isLightsOn: true }));
   }
 
+  public static async setMaxSpeed(
+    ride: RideModel,
+    props: { maxSpeed?: number }
+  ): Promise<void> {
+    const { maxSpeed } = props;
+    const { openapi } = <RideProperties>(<unknown>ride.properties);
+    await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/maxSpeed`, { searchParams: props })
+      .then(() => Ride.updateRideControl(ride, { maxSpeed: maxSpeed || 20 }));
+  }
+
   public static async lightsOff(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     await getPlatformClient()
