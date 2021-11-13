@@ -254,6 +254,26 @@ export class Ride {
       });
   }
 
+  public static async updateRideControl(
+    ride: RideModel,
+    props: {
+      isLocked?: boolean;
+      isLightsOn?: boolean;
+      maxSpeed?: number;
+    }
+  ): Promise<void> {
+    const { rideId } = ride;
+    const { isLocked, isLightsOn, maxSpeed } = await Joi.object({
+      isLocked: Joi.boolean().optional(),
+      isLightsOn: Joi.boolean().optional(),
+      maxSpeed: Joi.number().optional(),
+    }).validateAsync(props);
+    await prisma.rideModel.update({
+      where: { rideId },
+      data: { isLocked, isLightsOn, maxSpeed },
+    });
+  }
+
   public static async terminate(
     ride: RideModel,
     props?: { latitude?: number; longitude?: number }
@@ -313,22 +333,30 @@ export class Ride {
 
   public static async lightsOn(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
-    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lights/on`);
+    await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/lights/on`)
+      .then(() => Ride.updateRideControl(ride, { isLightsOn: true }));
   }
 
   public static async lightsOff(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
-    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lights/off`);
+    await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/lights/off`)
+      .then(() => Ride.updateRideControl(ride, { isLightsOn: false }));
   }
 
   public static async lock(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
-    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lock/on`);
+    await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/lock/on`)
+      .then(() => Ride.updateRideControl(ride, { isLocked: true }));
   }
 
   public static async unlock(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
-    await getPlatformClient().get(`ride/rides/${openapi.rideId}/lock/off`);
+    await getPlatformClient()
+      .get(`ride/rides/${openapi.rideId}/lock/off`)
+      .then(() => Ride.updateRideControl(ride, { isLocked: false }));
   }
 
   public static async getStatus(ride: RideModel): Promise<RideStatus> {

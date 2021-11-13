@@ -20,6 +20,10 @@ model RideModel {
   properties Json? // For HIKICK OpenAPI
   price      Int             @default(0)
 
+  isLocked   Boolean @default(false)
+  isLightsOn Boolean @default(false)
+  maxSpeed   Int     @default(20)
+
   endedAt   DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
