@@ -12,5 +12,13 @@ export function getWebhookRouter(): Router {
     })
   );
 
+  router.post(
+    '/speedChange',
+    Wrapper(async (req) => {
+      await Webhook.onSpeedChange(req.body);
+      throw RESULT.SUCCESS();
+    })
+  );
+
   return router;
 }

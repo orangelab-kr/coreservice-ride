@@ -77,6 +77,19 @@ export interface WebhookTerminate {
 }
 
 export class Webhook {
+  public static async onSpeedChange(payload: any): Promise<void> {
+    const { geofence, speed, ride } = payload;
+    await getCoreServiceClient('accounts').post({
+      url: `users/${ride.userId}/notifications`,
+      json: {
+        type: 'info',
+        visible: false,
+        title: `⚡️ ${geofence.name}(으)로 진입합니다. (${speed}km/h)`,
+        description: `안전을 위해 속도가 변경되었습습니다.`,
+      },
+    });
+  }
+
   public static async onTerminate(payload: WebhookTerminate): Promise<void> {
     const {
       userId,
