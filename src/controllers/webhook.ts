@@ -85,7 +85,7 @@ export class Webhook {
         type: 'info',
         visible: false,
         title: `⚡️ ${geofence.name}(으)로 진입합니다. (${speed}km/h)`,
-        description: `안전을 위해 속도가 변경되었습습니다.`,
+        description: `안전을 위해 속도가 변경되었습니다.`,
       },
     });
   }
