@@ -294,6 +294,13 @@ export class Ride {
         searchParams: { latitude, longitude },
       })
       .json();
+
+    try {
+      const { userId } = ride;
+      await getCoreServiceClient('accounts')
+        .post(`/users/${userId}/points`, { json: { type: 'ride', point: 1 } })
+        .json();
+    } catch (err: any) {}
   }
 
   public static async changeCoupon(
