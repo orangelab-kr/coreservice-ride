@@ -206,6 +206,7 @@ export class Ride {
       couponId?: string;
       latitude?: number;
       longitude?: number;
+      debug?: boolean;
     }
   ): Promise<() => Prisma.Prisma__RideModelClient<RideModel>> {
     const { userId, phoneNo: phone, realname, birthday } = user;
@@ -214,9 +215,10 @@ export class Ride {
       couponId: Joi.string().uuid().optional(),
       latitude: Joi.number().min(-90).max(90).required(),
       longitude: Joi.number().min(-180).max(180).required(),
+      debug: Joi.boolean().optional(),
     });
 
-    const { kickboardCode, longitude, latitude, couponId } =
+    const { kickboardCode, longitude, latitude, couponId, debug } =
       await schema.validateAsync(props);
 
     let discountId: string | undefined;
@@ -243,6 +245,7 @@ export class Ride {
           longitude,
           discountId,
           discountGroupId,
+          debug,
         },
       })
       .json();
