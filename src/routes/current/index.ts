@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   $$$,
   CurrentRideMiddleware,
+  getCurrentHelmetRouter,
   getCurrentLightsRouter,
   getCurrentLockRouter,
   LicenseMiddleware,
@@ -12,14 +13,16 @@ import {
   Wrapper,
 } from '../..';
 
+export * from './helmet';
 export * from './lights';
 export * from './lock';
 
 export function getCurrentRouter(): Router {
   const router = Router();
 
-  router.use('/lights', CurrentRideMiddleware(), getCurrentLightsRouter());
+  router.use('/helmet', CurrentRideMiddleware(), getCurrentHelmetRouter());
   router.use('/lock', CurrentRideMiddleware(), getCurrentLockRouter());
+  router.use('/lights', CurrentRideMiddleware(), getCurrentLightsRouter());
 
   // 라이딩 정보
   router.get(
