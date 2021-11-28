@@ -78,7 +78,8 @@ export interface WebhookTerminate {
 
 export class Webhook {
   public static async onSpeedChange(payload: any): Promise<void> {
-    const { geofence, speed, ride } = payload.data;
+    const { geofence, speed, ride, config } = payload.data;
+    if (config.speedLimit <= speed) return;
     await getCoreServiceClient('accounts').post({
       url: `users/${ride.userId}/notifications`,
       json: {
