@@ -370,14 +370,14 @@ export class Ride {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     await getPlatformClient()
       .get(`ride/rides/${openapi.rideId}/lock/on`)
-      .then(() => Ride.updateRideControl(ride, { isLocked: true }));
+      .finally(() => Ride.updateRideControl(ride, { isLocked: true }));
   }
 
   public static async unlock(ride: RideModel): Promise<void> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     await getPlatformClient()
       .get(`ride/rides/${openapi.rideId}/lock/off`)
-      .then(() => Ride.updateRideControl(ride, { isLocked: false }));
+      .finally(() => Ride.updateRideControl(ride, { isLocked: false }));
   }
 
   public static async getStatus(ride: RideModel): Promise<RideStatus> {
