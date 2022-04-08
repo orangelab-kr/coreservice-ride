@@ -29,14 +29,14 @@ export class Kickboard {
   public static async getNearKickboard(props: {
     lat?: number;
     lng?: number;
+    radius?: number;
   }): Promise<KickboardModel[]> {
-    const schema = await Joi.object({
+    const { lat, lng, radius } = await Joi.object({
       lat: Joi.number().min(-90).max(90).required(),
       lng: Joi.number().min(-180).max(180).required(),
-    });
-
-    const { lat, lng } = await schema.validateAsync(props);
-    const searchParams = { lat, lng, radius: 1000 };
+      radius: Joi.number().max(10000).default(1000).optional(),
+    }).validateAsync(props);
+    const searchParams = { lat, lng, radius };
     const { kickboards } = await getPlatformClient()
       .get('kickboard/near', { searchParams })
       .json<{ opcode: number; kickboards: KickboardModel[]; total: number }>();
