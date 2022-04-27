@@ -12,6 +12,14 @@ export function getKickboardsRouter(): Router {
     })
   );
 
+  router.post(
+    '/qrcode',
+    Wrapper(async (req) => {
+      const kickboardCode = await Kickboard.getKickboardCodeByQrcode(req.body);
+      throw RESULT.SUCCESS({ details: { kickboardCode } });
+    })
+  );
+
   router.get(
     '/:kickboardCode',
     Wrapper(async (req) => {

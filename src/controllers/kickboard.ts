@@ -53,4 +53,18 @@ export class Kickboard {
 
     return kickboard;
   }
+
+  public static async getKickboardCodeByQrcode(props: {
+    url: string;
+  }): Promise<string> {
+    const { url } = await Joi.object({
+      url: Joi.string().uri().required(),
+    }).validateAsync(props);
+
+    const { kickboardCode } = await getPlatformClient()
+      .post(`kickboard/qrcode`, { json: { url } })
+      .json<{ opcode: number; kickboardCode: string }>();
+
+    return kickboardCode;
+  }
 }
