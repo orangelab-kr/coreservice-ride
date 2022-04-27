@@ -11,7 +11,7 @@ export function InternalMiddleware(): WrapperCallback {
   return Wrapper(async (req, res, next) => {
     const { headers, query } = req;
     const token = headers.authorization
-      ? headers.authorization.substr(7)
+      ? headers.authorization.substring(7)
       : query.token;
 
     if (typeof token !== 'string') throw RESULT.REQUIRED_ACCESS_KEY();
