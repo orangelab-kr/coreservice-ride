@@ -14,6 +14,7 @@ import {
   Region,
   RESULT,
   UserMiddleware,
+  getRegionsRouter,
   Wrapper,
 } from '..';
 
@@ -21,6 +22,7 @@ export * from './current';
 export * from './histories';
 export * from './internal';
 export * from './kickboards';
+export * from './regions';
 export * from './webhook';
 
 export function getRouter(): Router {
@@ -29,6 +31,7 @@ export function getRouter(): Router {
   router.use('/kickboards', getKickboardsRouter());
   router.use('/current', UserMiddleware(), getCurrentRouter());
   router.use('/histories', UserMiddleware(), getHistoriesRouter());
+  router.use('/regions', UserMiddleware(), getRegionsRouter());
   router.use('/internal', InternalMiddleware(), getInternalRouter());
   router.use('/webhook', getWebhookRouter());
 
@@ -49,14 +52,6 @@ export function getRouter(): Router {
     ),
     Wrapper(async () => {
       throw RESULT.SUCCESS();
-    })
-  );
-
-  router.get(
-    '/regions',
-    Wrapper(async () => {
-      const regions = await Region.getRegions();
-      throw RESULT.SUCCESS({ details: { regions } });
     })
   );
 

@@ -67,11 +67,19 @@ export class Region {
     return regions;
   }
 
+  public static async getRegion(regionId: string): Promise<RegionModel> {
+    const { region } = await getPlatformClient()
+      .get(`location/regions/${regionId}`)
+      .json<{ opcode: number; region: RegionModel }>();
+
+    return region;
+  }
+
   public static async getCurrentGeofence(props: {
     lat?: number;
     lng?: number;
   }): Promise<RegionGeofenceModel> {
-    const schema = await Joi.object({
+    const schema = Joi.object({
       lat: Joi.number().min(-90).max(90).required(),
       lng: Joi.number().min(-180).max(180).required(),
     });
