@@ -16,7 +16,7 @@ export function UserMiddleware(): WrapperCallback {
   return Wrapper(async (req, res, next) => {
     const { headers } = req;
     const { authorization } = headers;
-    if (typeof authorization !== 'string') throw RESULT.INVALID_ERROR();
+    if (typeof authorization !== 'string') throw RESULT.REQUIRED_LOGIN();
     const sessionId = authorization.substring(7);
     const { user } = await getCoreServiceClient('accounts')
       .post(`users/authorize`, { json: { sessionId } })

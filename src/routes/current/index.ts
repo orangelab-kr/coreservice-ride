@@ -91,6 +91,18 @@ export function getCurrentRouter(): Router {
     })
   );
 
+  router.post(
+    '/location',
+    CurrentRideMiddleware(),
+    Wrapper(async (req) => {
+      const { body, loggined } = req;
+      let location = body;
+      if (location instanceof Array) location = body[0];
+      await $$$(Ride.addLocation(loggined.ride, location));
+      throw RESULT.SUCCESS();
+    })
+  );
+
   // 킥보드 위치
   router.get(
     '/timeline',

@@ -7,7 +7,7 @@ import {
   Joi,
   prisma,
   RESULT,
-  UserModel,
+  UserModel
 } from '..';
 
 export interface RideProperties {
