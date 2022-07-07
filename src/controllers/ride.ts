@@ -1,13 +1,16 @@
 import { LocationModel, Prisma, RideModel } from '@prisma/client';
+import * as Sentry from '@sentry/node';
 import dayjs from 'dayjs';
+import _ from 'lodash';
 import {
   $$$,
   getCoreServiceClient,
   getPlatformClient,
   Joi,
+  logger,
   prisma,
   RESULT,
-  UserModel
+  UserModel,
 } from '..';
 
 export interface RideProperties {
@@ -287,20 +290,38 @@ export class Ride {
       longitude: Joi.number().min(-180).max(180).optional(),
     });
 
+    const { userId, rideId } = ride;
     const { longitude, latitude } = await schema.validateAsync(props);
-    const platformClient = getPlatformClient();
-    await platformClient
-      .delete(`ride/rides/${openapi.rideId}`, {
-        searchParams: { latitude, longitude },
-      })
-      .json();
 
     try {
-      const { userId } = ride;
+      const platformClient = getPlatformClient();
+      await platformClient.delete(`ride/rides/${openapi.rideId}`, {
+        searchParams: { latitude, longitude },
+      });
+    } catch (err: any) {
+      if (_.get(err, 'response.data.opcode') === -513) {
+        await prisma.rideModel.update({
+          where: { rideId },
+          data: { endedAt: new Date() },
+        });
+      } else {
+        const eventId = Sentry.captureException(err);
+        logger.info(
+          `Ride / ${rideId} 라이드를 종료할 수 없습니다. (${eventId})`
+        );
+      }
+    }
+
+    try {
       await getCoreServiceClient('accounts')
         .post(`/users/${userId}/points`, { json: { type: 'ride', point: 1 } })
         .json();
-    } catch (err: any) {}
+    } catch (err: any) {
+      const eventId = Sentry.captureException(err);
+      logger.info(
+        `Points / ${userId} 사용자에 대한 포인트를 적립할 수 없습니다. (${eventId})`
+      );
+    }
   }
 
   public static async changeCoupon(
