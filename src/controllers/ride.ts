@@ -298,29 +298,33 @@ export class Ride {
       await platformClient.delete(`ride/rides/${openapi.rideId}`, {
         searchParams: { latitude, longitude },
       });
-    } catch (err: any) {
-      if (_.get(err, 'response.data.opcode') === -513) {
-        await prisma.rideModel.update({
-          where: { rideId },
-          data: { endedAt: new Date() },
-        });
-      } else {
+    } catch (err) {
+      if (_.get(err, 'response.data.opcode') !== -513) {
         const eventId = Sentry.captureException(err);
         logger.info(
-          `Ride / ${rideId} 라이드를 종료할 수 없습니다. (${eventId})`
+          `Points / ${userId} 사용자에 대한 포인트를 적립할 수 없습니다. (${eventId})`
         );
+
+        throw err;
       }
     }
 
-    try {
-      await getCoreServiceClient('accounts')
-        .post(`/users/${userId}/points`, { json: { type: 'ride', point: 1 } })
-        .json();
-    } catch (err: any) {
-      const eventId = Sentry.captureException(err);
-      logger.info(
-        `Points / ${userId} 사용자에 대한 포인트를 적립할 수 없습니다. (${eventId})`
-      );
+    if (!ride.endedAt) {
+      await prisma.rideModel.update({
+        where: { rideId },
+        data: { endedAt: new Date() },
+      });
+
+      try {
+        await getCoreServiceClient('accounts')
+          .post(`users/${userId}/points`, { json: { type: 'ride', point: 1 } })
+          .json();
+      } catch (err: any) {
+        const eventId = Sentry.captureException(err);
+        logger.info(
+          `Points / ${userId} 사용자에 대한 포인트를 적립할 수 없습니다. (${eventId})`
+        );
+      }
     }
   }
 
