@@ -61,7 +61,7 @@ export interface RegionModel {
 export class Region {
   public static async getRegions(): Promise<RegionModel[]> {
     const { regions } = await getPlatformClient()
-      .get('location/regions/all')
+      .get('location/regions')
       .json<{ opcode: number; regions: RegionModel[] }>();
 
     return regions;

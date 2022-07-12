@@ -7,8 +7,8 @@ export function getRegionsRouter(): Router {
   router.get(
     '/',
     Wrapper(async (req) => {
-      const geofence = await Region.getCurrentGeofence(req.query);
-      throw RESULT.SUCCESS({ details: { geofence } });
+      const regions = await Region.getRegions();
+      throw RESULT.SUCCESS({ details: { regions } });
     })
   );
 
