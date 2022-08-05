@@ -3,6 +3,10 @@ import { getCoreServiceClient, RESULT, Wrapper, WrapperCallback } from '../..';
 
 export function InternalLicenseMiddleware(): WrapperCallback {
   return Wrapper(async (req, res, next) => {
+    // 당분간 운전면허 인증을 진행하지 않음
+    next();
+    return;
+
     if (!req.internal) throw RESULT.REQUIRED_LOGIN();
     const { userId } = req.internal.user;
     const { license } = await getCoreServiceClient('accounts')

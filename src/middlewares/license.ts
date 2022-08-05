@@ -13,6 +13,10 @@ export interface LicenseModel {
 
 export function LicenseMiddleware(): WrapperCallback {
   return Wrapper(async (req, res, next) => {
+    // 당분간 운전면허 인증을 진행하지 않음
+    next();
+    return;
+
     if (!req.loggined) throw RESULT.REQUIRED_LOGIN();
     const { userId } = req.loggined.user;
     const { license } = await getCoreServiceClient('accounts')

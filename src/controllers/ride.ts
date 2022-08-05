@@ -294,8 +294,7 @@ export class Ride {
     const { longitude, latitude } = await schema.validateAsync(props);
 
     try {
-      const platformClient = getPlatformClient();
-      await platformClient.delete(`ride/rides/${openapi.rideId}`, {
+      await getPlatformClient().delete(`ride/rides/${openapi.rideId}`, {
         searchParams: { latitude, longitude },
       });
     } catch (err) {

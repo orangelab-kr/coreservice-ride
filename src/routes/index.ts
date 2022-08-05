@@ -6,6 +6,7 @@ import {
   getHistoriesRouter,
   getInternalRouter,
   getKickboardsRouter,
+  getRegionsRouter,
   getWebhookRouter,
   InternalMiddleware,
   LicenseMiddleware,
@@ -14,7 +15,6 @@ import {
   Region,
   RESULT,
   UserMiddleware,
-  getRegionsRouter,
   Wrapper,
 } from '..';
 
