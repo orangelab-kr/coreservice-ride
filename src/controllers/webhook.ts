@@ -28,14 +28,12 @@ export interface WebhookTerminate {
     price: number;
     createdAt: Date;
     updatedAt: Date;
-    deletedAt: null;
     startedPhoneLocation: {
       locationId: string;
       latitude: number;
       longitude: number;
       createdAt: Date;
       updatedAt: Date;
-      deletedAt: null;
     };
     startedKickboardLocation: {
       locationId: string;
@@ -43,7 +41,6 @@ export interface WebhookTerminate {
       longitude: number;
       createdAt: Date;
       updatedAt: Date;
-      deletedAt: null;
     };
     terminatedPhoneLocation: null;
     terminatedKickboardLocation: null;
@@ -58,13 +55,11 @@ export interface WebhookTerminate {
       total: number;
       createdAt: Date;
       updatedAt: Date;
-      deletedAt: null;
     };
   };
   completedAt: null;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
   webhook: {
     webhookId: string;
     type: string;
@@ -72,7 +67,6 @@ export interface WebhookTerminate {
     url: string;
     createdAt: Date;
     updatedAt: Date;
-    deletedAt: null;
   };
 }
 

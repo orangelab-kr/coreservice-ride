@@ -77,7 +77,6 @@ export interface CouponModel {
   expiredAt: Date;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
 }
 
 export interface CouponGroupModel {
@@ -91,7 +90,6 @@ export interface CouponGroupModel {
   properties: CouponGroupPropertiesModel;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
 }
 
 export interface CouponPropertiesModel {
@@ -559,7 +557,7 @@ export class Ride {
       couponId?: string;
       startedAt?: Date;
       endedAt?: Date;
-      orderByField?: 'createdAt' | 'updatedAt' | 'deletedAt' | 'endedAt';
+      orderByField?: 'createdAt' | 'updatedAt' | 'endedAt';
       orderBySort?: 'asc' | 'desc';
     },
     user?: UserModel
@@ -573,7 +571,7 @@ export class Ride {
       startedAt: Joi.date().default(new Date(0)).optional(),
       endedAt: Joi.date().default(new Date()).optional(),
       orderByField: Joi.string()
-        .valid('endedAt', 'createdAt', 'updatedAt', 'deletedAt')
+        .valid('endedAt', 'createdAt', 'updatedAt')
         .default('createdAt')
         .optional(),
       orderBySort: Joi.string().valid('asc', 'desc').default('desc').optional(),

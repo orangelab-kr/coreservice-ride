@@ -11,7 +11,6 @@ export interface PricingModel {
   surchargePrice: number;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
 }
 
 export interface RegionGeofenceModel {
@@ -25,7 +24,6 @@ export interface RegionGeofenceModel {
   profile: ProfileModel;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
 }
 
 export interface RegionGeofenceGeojsonModel {
@@ -43,7 +41,6 @@ export interface ProfileModel {
   hasSurcharge: boolean;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
 }
 
 export interface RegionModel {
@@ -53,7 +50,6 @@ export interface RegionModel {
   pricingId: string;
   createdAt: Date;
   updatedAt: Date;
-  deletedAt: null;
   pricing: PricingModel;
   geofences: RegionGeofenceModel[];
 }

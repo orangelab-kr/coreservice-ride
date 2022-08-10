@@ -27,7 +27,6 @@ model RideModel {
   endedAt   DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
 }
 
 model LocationModel {
@@ -39,7 +38,6 @@ model LocationModel {
   latitude  Float
   longitude Float
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
