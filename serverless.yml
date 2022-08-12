@@ -6,6 +6,7 @@ provider:
   runtime: nodejs14.x
   region: ap-northeast-2
   stage: stage
+  timeout: 20
   apiGateway:
     shouldStartNameWithService: true
 
