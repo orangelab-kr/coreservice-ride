@@ -562,6 +562,8 @@ export class Ride {
     },
     user?: UserModel
   ): Promise<{ total: number; rides: RideModel[] }> {
+    logger.info(JSON.stringify(user));
+
     const schema = Joi.object({
       take: Joi.number().default(10).optional(),
       skip: Joi.number().default(0).optional(),
@@ -605,7 +607,7 @@ export class Ride {
 
     if (userId) where.userId = userId;
     if (couponId) where.couponId = couponId;
-    if (user) where.userId = userId;
+    if (user) where.userId = user.userId;
     const [total, rides] = await prisma.$transaction([
       prisma.rideModel.count({ where }),
       prisma.rideModel.findMany({ where, take, skip, orderBy }),
