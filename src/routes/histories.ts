@@ -22,6 +22,15 @@ export function getHistoriesRouter(): Router {
     })
   );
 
+  router.get(
+    '/:rideId/timeline',
+    RideMiddleware(),
+    Wrapper(async (req) => {
+      const timeline = await Ride.getTimeline(req.loggined.ride);
+      throw RESULT.SUCCESS({ details: { timeline } });
+    })
+  );
+
   router.post(
     '/:rideId/photo',
     RideMiddleware(),
