@@ -20,7 +20,7 @@ export function UserMiddleware(): WrapperCallback {
     const sessionId = authorization.substring(7);
     const { user } = await getCoreServiceClient('accounts')
       .post(`users/authorize`, { json: { sessionId } })
-      .json();
+      .json<{ opcode: number; user: UserModel }>();
 
     const payload: any = {
       sessionId,

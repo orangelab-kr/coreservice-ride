@@ -21,7 +21,7 @@ export function LicenseMiddleware(): WrapperCallback {
     const { userId } = req.loggined.user;
     const { license } = await getCoreServiceClient('accounts')
       .get(`users/${userId}/license?orThrow=true`)
-      .json();
+      .json<{ opcode: number; license: LicenseModel }>();
 
     req.loggined.license = {
       licenseId: license.licenseId,

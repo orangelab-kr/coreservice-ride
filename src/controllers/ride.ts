@@ -249,7 +249,7 @@ export class Ride {
           debug,
         },
       })
-      .json();
+      .json<{ opcode: number; rideId: string }>();
 
     const properties = { openapi: { rideId } };
     const locations = { create: { latitude, longitude } };

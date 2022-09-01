@@ -1,5 +1,11 @@
 import dayjs from 'dayjs';
-import { getCoreServiceClient, RESULT, Wrapper, WrapperCallback } from '../..';
+import {
+  getCoreServiceClient,
+  LicenseModel,
+  RESULT,
+  Wrapper,
+  WrapperCallback,
+} from '../..';
 
 export function InternalLicenseMiddleware(): WrapperCallback {
   return Wrapper(async (req, res, next) => {
@@ -11,7 +17,7 @@ export function InternalLicenseMiddleware(): WrapperCallback {
     const { userId } = req.internal.user;
     const { license } = await getCoreServiceClient('accounts')
       .get(`users/${userId}/license?orThrow=true`)
-      .json();
+      .json<{ opcode: number; license: LicenseModel }>();
 
     req.internal.license = {
       licenseId: license.licenseId,

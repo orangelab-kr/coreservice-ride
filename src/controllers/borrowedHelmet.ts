@@ -7,11 +7,10 @@ export class BorrowedHelmet {
     props: { deviceInfo?: string }
   ): Promise<any> {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
+    const options = { searchParams: props };
     const { helmet } = await getPlatformClient()
-      .get(`ride/rides/${openapi.rideId}/borrowedHelmet`, {
-        searchParams: props,
-      })
-      .json();
+      .get(`ride/rides/${openapi.rideId}/borrowedHelmet`, options)
+      .json<{ opcode: number; helmet: any }>();
 
     return helmet;
   }
@@ -24,7 +23,7 @@ export class BorrowedHelmet {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     const { helmet } = await getPlatformClient()
       [method](`ride/rides/${openapi.rideId}/borrowedHelmet/borrow`)
-      .json();
+      .json<{ opcode: number; helmet: any }>();
 
     return helmet;
   }
@@ -37,7 +36,7 @@ export class BorrowedHelmet {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     const { helmet } = await getPlatformClient()
       [method](`ride/rides/${openapi.rideId}/borrowedHelmet/return`)
-      .json();
+      .json<{ opcode: number; helmet: any }>();
 
     return helmet;
   }
@@ -46,7 +45,7 @@ export class BorrowedHelmet {
     const { openapi } = <RideProperties>(<unknown>ride.properties);
     const { helmet } = await getPlatformClient()
       .get(`ride/rides/${openapi.rideId}/borrowedHelmet/credentials`)
-      .json();
+      .json<{ opcode: number; helmet: any }>();
 
     return helmet;
   }

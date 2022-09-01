@@ -1,10 +1,9 @@
 import dayjs from 'dayjs';
 import {
   getCoreServiceClient,
-  Joi,
-  RESULT,
+  Joi, UserModel,
   Wrapper,
-  WrapperCallback,
+  WrapperCallback
 } from '../..';
 
 export function InternalUserMiddleware(): WrapperCallback {
@@ -13,7 +12,7 @@ export function InternalUserMiddleware(): WrapperCallback {
     if (typeof userId !== 'string') throw new Error();
     const { user } = await getCoreServiceClient('accounts')
       .get(`users/${userId}`)
-      .json();
+      .json<{ opcode: number; user: UserModel }>();
 
     req.internal.user = {
       userId: user.userId,
@@ -37,7 +36,7 @@ export function InternalUserByQueryMiddleware(): WrapperCallback {
     }).validateAsync(req.query);
     const { user } = await getCoreServiceClient('accounts')
       .get(`users/${userId}`)
-      .json();
+      .json<{ opcode: number; user: UserModel }>();
 
     req.internal.user = {
       userId: user.userId,
